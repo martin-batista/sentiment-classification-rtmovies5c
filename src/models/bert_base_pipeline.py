@@ -49,9 +49,9 @@ class ClassificationTransformer(TextClassificationTransformer):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         # automatically find the total number of steps we need
         num_training_steps, num_warmup_steps = self.compute_warmup(self.num_training_steps, num_warmup_steps=0.1)
-        scheduler = transformers.get_linear_schedule_with_warmup(
+        scheduler = transformers.get_linear_schedule_with_warmup( # type: ignore
             self.optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps
-        )
+        ) 
         return {
             "optimizer": optimizer,
             "lr_scheduler": {"scheduler": scheduler, "interval": "step", "frequency": 1},
