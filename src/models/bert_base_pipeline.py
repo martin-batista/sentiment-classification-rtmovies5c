@@ -17,7 +17,7 @@ import transformers
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
 parameters = {
-    'dataset_id': '68a0d585393e407498c59c44968dcc49',
+    'dataset_id': '24860578991349d1b5e3c742737f58ee',
     'validation_split': 0.1,
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
@@ -51,7 +51,7 @@ class ClassificationTransformer(TextClassificationTransformer):
         num_training_steps, num_warmup_steps = self.compute_warmup(self.num_training_steps, num_warmup_steps=0.1)
         scheduler = transformers.get_linear_schedule_with_warmup( # type: ignore
             self.optimizer, num_warmup_steps=num_warmup_steps, num_training_steps=num_training_steps
-        ) 
+        )
         return {
             "optimizer": optimizer,
             "lr_scheduler": {"scheduler": scheduler, "interval": "step", "frequency": 1},
