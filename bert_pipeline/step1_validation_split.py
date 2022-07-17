@@ -55,8 +55,8 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
     task.get_logger().report_single_value('Wasserstein distance', round(w_distance,5))
 
     def log_histogram(task, df_1, df_2, title, name_1, name_2):
-        histogram_1 = df_1['label'].value_counts()
-        histogram_2 = df_2['label'].value_counts()
+        histogram_1 = df_1['label'].value_counts()/len(df_1)
+        histogram_2 = df_2['label'].value_counts()/len(df_2)
         task.current_logger().report_histogram(
             title=title,
             series=name_1,
