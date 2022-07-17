@@ -1,17 +1,17 @@
 from clearml import Task
 import pandas as pd
 import numpy as np
-import json
 from pathlib import Path
+import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
 
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_1 train_val_split')
+task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_1_train_val_split')
 
 parameters = {
-    'dataset_id': 'd4eaca0579de44d5a962e6cb412cdcf8',
+    'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
     'validation_split': 0.1,
     'seed': 42,
 }
@@ -57,7 +57,7 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
     def log_histogram(task, df_1, df_2, title, name_1, name_2):
         histogram_1 = df_1['label'].value_counts()/len(df_1)
         histogram_2 = df_2['label'].value_counts()/len(df_2)
-        task.current_logger().report_histogram(
+        task.get_logger().report_histogram(
             title=title,
             series=name_1,
             values=histogram_1,
@@ -65,7 +65,7 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
             xaxis="Class",
             yaxis="Density",
         )
-        task.current_logger().report_histogram(
+        task.get_logger().report_histogram(
             title=title,
             series=name_2,
             values=histogram_2,
@@ -79,6 +79,7 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
 
 
 def main(task=task, parameters=parameters):
+    pl.seed_everything(parameters['seed'])
     train, test = get_train_test_data(parameters['dataset_id'])
     train_validation_split(train, parameters['validation_split'], task)
 
