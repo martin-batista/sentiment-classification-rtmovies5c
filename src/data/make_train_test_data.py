@@ -5,7 +5,7 @@ import numpy as np
 from clearml import Dataset, StorageManager, Task
 from scipy.stats import wasserstein_distance
 
-PROJECT_NAME = 'sentiment-analysis-rtmovies5c'
+PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 S3_BUCKET = "s3://rt-movies-5c/"
 
 task = Task.init(
@@ -66,7 +66,7 @@ def log_histogram(dataset_task, dataframe, name):
         yaxis='Amount of samples'
     )
    
-if __name__ == '__main__':
+def main():
    manager = StorageManager() 
 
    data_url = S3_BUCKET + "data/raw/data.tsv"
@@ -108,15 +108,5 @@ if __name__ == '__main__':
    dataset_task.flush(wait_for_uploads=True)
 
 
-
-
-
-   
-   
-
-
-
-
-
-    
-
+if __name__ == '__main__':
+    main()
