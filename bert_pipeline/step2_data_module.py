@@ -1,7 +1,7 @@
 from clearml import Task
 from pathlib import Path
 import json
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer # type: ignore
 from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
@@ -13,7 +13,7 @@ task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_2 data_modu
 parameters = {
     'preprocess_task_id': '0b8cca4925644b43bedaa7de4cbe9831',
     'pre_trained_model': 'bert-base-uncased',
-    'batch_size': 1,
+    'batch_size': 16,
     'max_length': 512,
 }
 
@@ -49,7 +49,8 @@ def main(parameters):
             json.dump(data, f)
 
     #Constructs the data module.
-    build_data_module(data_path, parameters)
+    dm = build_data_module(data_path, parameters)
+    task.upload_artifact('data_module', dm)
 
 
 if __name__ == '__main__':
