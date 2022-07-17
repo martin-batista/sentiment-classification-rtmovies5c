@@ -47,6 +47,7 @@ def log_histogram(task, df_1, df_2, title, name_1, name_2):
         title=title,
         series=name_1,
         values=histogram_1,
+        xlabels=histogram_1.index.tolist(),
         xaxis="Class",
         yaxis="Density",
     )
@@ -54,6 +55,7 @@ def log_histogram(task, df_1, df_2, title, name_1, name_2):
         title=title,
         series=name_2,
         values=histogram_2,
+        xlabels=histogram_2.index.tolist(),
         xaxis="Class",
         yaxis="Density",
     )

@@ -61,6 +61,7 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
             title=title,
             series=name_1,
             values=histogram_1,
+            xlabels=histogram_1.index.tolist(),
             xaxis="Class",
             yaxis="Density",
         )
@@ -68,6 +69,7 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
             title=title,
             series=name_2,
             values=histogram_2,
+            xlabels=histogram_2.index.tolist(),
             xaxis="Class",
             yaxis="Density",
         )
@@ -79,6 +81,9 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
 def main(task=task, parameters=parameters):
     train, test = get_train_test_data(parameters['dataset_id'])
     train_validation_split(train, parameters['validation_split'], task)
+
+    #Upload test data:
+    task.upload_artifact(name='test_data', artifact_object=test.to_json(orient='records'))
 
 if __name__ == '__main__':
     main()
