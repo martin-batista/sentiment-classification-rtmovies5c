@@ -4,22 +4,7 @@ import pandas as pd
 import numpy as np
 from clearml import Dataset, StorageManager, Task
 from scipy.stats import wasserstein_distance
-
-PROJECT_NAME = 'sentiment-classification-rtmovies5c'
-S3_BUCKET = "s3://rt-movies-5c/"
-
-task = Task.init(
-    project_name=PROJECT_NAME,
-    task_name='train_test_split',
-    task_type='data_processing'  # type: ignore
-)
-
-parameters = {
-    'test_split': 0.2,
-    'random_seed': 26894,
-}
-
-task.connect(parameters)
+from config import PROJECT_NAME, S3_BUCKET
 
 def train_test_split(data: pd.DataFrame, test_split: float, seed: int) -> tuple[pd.DataFrame, pd.DataFrame]: 
     """Generates the train and test splits.
@@ -55,19 +40,31 @@ def split_data(dataset_path, parameters):
 
     return train_data, test_data, w_distance
 
-def log_histogram(dataset_task, dataframe, name):
-    histogram_data = dataframe['label'].value_counts()
-    dataset_task.get_logger().report_histogram(
-        title=name,
-        series='Class distributions',
-        values=histogram_data,
-        iteration=0,
-        xlabels=histogram_data.index.tolist(),
-        yaxis='Amount of samples'
+def log_histogram(task, df_1, df_2, title, name_1, name_2):
+    histogram_1 = df_1['label'].value_counts()
+    histogram_2 = df_2['label'].value_counts()
+    task.get_logger().report_histogram(
+        title=title,
+        series=name_1,
+        values=histogram_1,
+        xaxis="Class",
+        yaxis="Density",
+    )
+    task.get_logger().report_histogram(
+        title=title,
+        series=name_2,
+        values=histogram_2,
+        xaxis="Class",
+        yaxis="Density",
     )
    
 def main():
    manager = StorageManager() 
+
+   parameters = {
+        'test_split': 0.2,
+        'random_seed': 26894,
+    }
 
    data_url = S3_BUCKET + "data/raw/data.tsv"
    metadata_url = S3_BUCKET + "data/raw/metadata.txt"
@@ -90,11 +87,12 @@ def main():
    dataset_task.get_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test)
    dataset_task.get_logger().report_single_value('Train size', len(train))
    dataset_task.get_logger().report_single_value('Test size', len(test))
-   dataset_task.get_logger().report_single_value('Wasserstein distance', w_distance)
+   dataset_task.get_logger().report_single_value('Train sentences', train['SentenceId'].nunique())
+   dataset_task.get_logger().report_single_value('Validation sentences', test['SentenceId'].nunique())
+   dataset_task.get_logger().report_single_value('Wasserstein distance', round(w_distance,5))
 
    # Log the histogram.
-   log_histogram(dataset_task, train, 'Train') 
-   log_histogram(dataset_task, test, 'Test') 
+   log_histogram(dataset_task, train, test, title='Train/Test splits', name_1='Train', name_2='Test') 
 
    # Add metadata as artifact.
    dataset_task.upload_artifact(name='metadata', artifact_object=metadata_path)
