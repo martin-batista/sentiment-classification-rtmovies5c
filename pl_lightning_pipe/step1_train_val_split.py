@@ -114,13 +114,13 @@ def main(parameters=parameters, task=task):
                   name_2='Valid', name_3='Test') 
 
     #Store the data:
-    train_json = train_data[['label', 'text']].to_json(orient='records')
-    valid_json = validation_data[['label', 'text']].to_json(orient='records')
-    test_json = test_data[['label', 'text']].to_json(orient='records')
+    train_save = train_data[['label', 'text']].copy()
+    valid_save = validation_data[['label', 'text']].copy()
+    test_save = test_data[['label', 'text']].copy()
 
-    task.upload_artifact(name='train_data', artifact_object=train_json, wait_on_upload=True)
-    task.upload_artifact(name='validation_data', artifact_object=valid_json, wait_on_upload=True)
-    task.upload_artifact(name='test_data', artifact_object=test_json, wait_on_upload=True)
+    task.upload_artifact(name='train_data', artifact_object=train_save, wait_on_upload=True)
+    task.upload_artifact(name='validation_data', artifact_object=valid_save, wait_on_upload=True)
+    task.upload_artifact(name='test_data', artifact_object=test_save, wait_on_upload=True)
                   
 
 if __name__ == '__main__':
