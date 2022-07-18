@@ -1,4 +1,4 @@
-from clearml import Task
+from clearml import Dataset, Task
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -8,21 +8,21 @@ from scipy.stats import wasserstein_distance
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_1_train_val_split')
+task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers_pipe_1 - train/val split')
 
 parameters = {
+    'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
     'validation_split': 0.1,
     'seed': 42,
 }
 
 task.connect(parameters)
 
-def get_train_test_data():
-    task = Task.get_task(task_name='train_test_raw',
-                         project_name=PROJECT_NAME)
+def get_train_test_data(task_id):
+    dataset_task = Task.get_task(task_id)
 
-    train = task.artifacts['train'].get()
-    test = task.artifacts['test'].get()
+    train = dataset_task.artifacts['train'].get()
+    test = dataset_task.artifacts['test'].get()
 
     return train, test
 
@@ -41,12 +41,9 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
     #Wasserstein distance between distributions:
     w_distance = wasserstein_distance(train_data['label'].values, validation_data['label'].values)
 
-    train_json = train_data[['label', 'text']].to_json(orient='records')
-    valid_json = validation_data[['label', 'text']].to_json(orient='records')
-
     #Store the data:
-    task.upload_artifact(name='train_data', artifact_object=train_json)
-    task.upload_artifact(name='validation_data', artifact_object=valid_json)
+    task.upload_artifact(name='train_data', artifact_object=train_data[['label','text']])
+    task.upload_artifact(name='validation_data', artifact_object=validation_data[['label','text']])
 
     #Log data information:
     task.get_logger().report_table(title='Train examples',series='pandas DataFrame',iteration=0,table_plot=train_data)
@@ -82,11 +79,11 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
 
 def main(task=task, parameters=parameters):
     pl.seed_everything(parameters['seed'])
-    train, test = get_train_test_data()
+    train, test = get_train_test_data(parameters['dataset_id'])
     train_validation_split(train, parameters['validation_split'], task)
 
     #Upload test data:
-    task.upload_artifact(name='test_data', artifact_object=test.to_json(orient='records'))
+    task.upload_artifact(name='test_data', artifact_object=test[['label', 'text']])
 
 if __name__ == '__main__':
     main()
