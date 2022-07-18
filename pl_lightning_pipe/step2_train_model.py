@@ -45,7 +45,7 @@ def train_model(data_module, parameters):
                                        freeze_backbone=parameters['freeze_backbone'])
 
 
-def main(parameters=parameters):
+def main(parameters=parametera, task=task):
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1 - train/val split',
                                     project_name=PROJECT_NAME)
@@ -80,6 +80,10 @@ def main(parameters=parameters):
     model = train_model(dm, parameters)
     trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=1, callbacks=[checkpoint_callback])
     trainer.fit(model, dm)
+
+    #Stores the trained model as an artifact (zip).
+    task.upload_artifact(str(model_path), 'model')
+
 
 if __name__ == '__main__':
     main()
