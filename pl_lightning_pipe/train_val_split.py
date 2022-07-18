@@ -7,11 +7,13 @@ from scipy.stats import wasserstein_distance
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, 
+task = Task.create(project_name=PROJECT_NAME, 
                  task_name='train_val_split',
                  task_type='data_processing', #type: ignore 
+                #  repo='martin-batista/sentiment-classification-rtmovies5c',
+                 add_task_init_call=True,
+                 requirements_file = 'requirements.txt',
                  )
-task.add_requirements('requirements.txt')
 
 parameters = {
     'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
