@@ -1,13 +1,16 @@
+from clearml import Task
 import pytorch_lightning as pl
 import torch
 from lightning_transformers.task.nlp.text_classification import (
-    TextClassificationDataModule,
     TextClassificationTransformer,
 )
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
+task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_3 train_model')
+
 parameters = {
+    'data_module_task_id': '382edb033962439cb741868df98144dc',
     'validation_split': 0.1,
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
@@ -19,6 +22,8 @@ parameters = {
     'accelerator': 'auto',
     'devices': 'auto',
 }
+
+task.connect(parameters)
 
 class ClassificationTransformer(TextClassificationTransformer): 
 
@@ -54,6 +59,15 @@ def train_model(data_module, parameters):
 
 
 def main(parameters):
+    pl.seed_everything(parameters['seed'])
+    dm = Task.get_task(task_id=parameters['data_module_task_id']).artifacts['data_module'].get()
+    train_model(dm, parameters)
+
+if __name__ == '__main__':
+    main(parameters)
+
+
+
     
 
 
