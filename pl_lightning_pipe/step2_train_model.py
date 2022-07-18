@@ -10,7 +10,7 @@ from lightning_transformers.task.nlp.text_classification import (
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-# task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers_pipe_2 - train_model')
+task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers_pipe_2 - train_model')
 
 parameters = {
     'validation_split': 0.1,
@@ -25,15 +25,16 @@ parameters = {
     'devices': 'auto',
 }
 
-# task.connect(parameters)
+task.connect(parameters)
 
-def build_data_module(data_path, parameters):
+def build_data_module(path, parameters):
     tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
+    valid = parameters['validation_split'] > 0.0
     return TextClassificationDataModule(batch_size=parameters['batch_size'],
                                         max_length=parameters['max_length'], 
-                                        train_file=f'{data_path}/train_data.json',
-                                        validation_file=f'{data_path}/valid_data.json',
-                                        test_file=f'{data_path}/test_data.json',
+                                        train_file=f'{path}/train.json',
+                                        validation_file= f'{path}/valid.json' if valid else None,
+                                        test_file=f'{path}/test.json',
                                         tokenizer=tokenizer)
 
 
@@ -61,10 +62,10 @@ def main(parameters=parameters):
     #Stores the data locally for training.
     train_data.to_json(interim_path / 'train.json', orient='records', lines=True)
     valid_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
-    test_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
+    test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     #Constructs the data module.
-    dm = build_data_module(str(data_path), parameters)
+    dm = build_data_module(interim_path, parameters)
 
     #Defines training callbacks.
     model_name = parameters['pre_trained_model']
@@ -73,14 +74,12 @@ def main(parameters=parameters):
 
     checkpoint_callback = ModelCheckpoint(
         monitor='val_loss',
-        dirpath=str(model_path),
-        filename='sample-mnist-{epoch:02d}-{val_loss:.2f}')
-
+        dirpath=str(model_path))
 
     #Trains the model.
     model = train_model(dm, parameters)
     trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=1, callbacks=[checkpoint_callback])
-    # trainer.fit(model, dm)
+    trainer.fit(model, dm)
 
 if __name__ == '__main__':
     main()
