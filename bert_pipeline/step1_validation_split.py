@@ -11,7 +11,6 @@ PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_1_train_val_split')
 
 parameters = {
-    'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
     'validation_split': 0.1,
     'seed': 42,
 }
@@ -19,8 +18,12 @@ parameters = {
 task.connect(parameters)
 
 def get_train_test_data(dataset_id):
-    train = Task.get_task(task_id=dataset_id).artifacts['train'].get()
-    test = Task.get_task(task_id=dataset_id).artifacts['test'].get()
+    task = Task.get_task(task_name='train_test_raw',
+                         project_name=PROJECT_NAME)
+
+    train = task.artifacts['train'].get()
+    test = task.artifacts['test'].get()
+
     return train, test
 
 def train_validation_split(train: pd.DataFrame, validation_split: int, task: Task):

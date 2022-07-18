@@ -11,9 +11,9 @@ PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_2 data_module')
 
 parameters = {
-    'preprocess_task_id': '0b8cca4925644b43bedaa7de4cbe9831',
+    'preprocess_task_id': '1e470919c2204b23ab61b31f84c9b22f',
     'pre_trained_model': 'bert-base-uncased',
-    'batch_size': 16,
+    'batch_size': 1,
     'max_length': 512,
 }
 
@@ -34,7 +34,9 @@ def build_data_module(data_path, parameters):
 
 def main(parameters):
     #Grabs the preprocessed data from the previous step:
-    preprocess_task = Task.get_task(task_id=parameters['preprocess_task_id'])
+    preprocess_task = Task.get_task(task_name='BERT_pipeline_1_train_val_split',
+                                    project_name=PROJECT_NAME)
+
     train_data = preprocess_task.artifacts['train_data'].get()
     valid_data = preprocess_task.artifacts['validation_data'].get()
     test_data = preprocess_task.artifacts['test_data'].get()
