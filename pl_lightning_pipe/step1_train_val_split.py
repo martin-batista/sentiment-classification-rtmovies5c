@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
-from pipe_conf import PROJECT_NAME
+from pipe_conf import PROJECT_NAME, SOURCE_DATASET
 
 # Task.add_requirements('requirements.txt')
 
@@ -138,7 +138,7 @@ def main():
 
     split_dataset = Dataset.create(dataset_name='data_split', 
                                    dataset_project=PROJECT_NAME,
-                                   parent_datasets=['train_test_raw'])
+                                   parent_datasets=[SOURCE_DATASET])
 
     split_dataset.add_files(interim_path)
     split_dataset.upload()
