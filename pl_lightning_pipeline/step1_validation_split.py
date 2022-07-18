@@ -85,6 +85,8 @@ def main(task=task, parameters=parameters):
     w_distance_train_test = wasserstein_distance(train_data['label'].values, test_data['label'].values)
     w_distance_test_valid = wasserstein_distance(test_data['label'].values, validation_data['label'].values)
 
+    mean_w_distance = (w_distance_train_valid + w_distance_train_test + w_distance_test_valid)/3
+
     #Log data information:
     task.get_logger().report_table(title='Train examples',series='pandas DataFrame',iteration=0,table_plot=train_data)
     task.get_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
@@ -98,9 +100,11 @@ def main(task=task, parameters=parameters):
     task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())
     task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique())
 
-    task.get_logger().report_single_value('Wasserstein distance', round(w_distance_train_valid,5))
-    task.get_logger().report_single_value('Wasserstein distance', round(w_distance_train_test,5))
-    task.get_logger().report_single_value('Wasserstein distance', round(w_distance_test_valid,5))
+    task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))
+    task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))
+    task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5))
+    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))
+
 
     log_histogram(task, train_data, validation_data, test_data, 
                   title='Data splits', name_1='Train', 
