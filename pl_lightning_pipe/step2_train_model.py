@@ -16,11 +16,11 @@ parameters = {
     'validation_split': 0.1,
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
-    'batch_size': 1,
+    'batch_size': 16,
     'max_length': 512,
     'lr': 2e-5,
     'freeze_backbone': True,
-    'num_epochs': 1,
+    'num_epochs': 3,
     'accelerator': 'auto',
     'devices': 'auto',
 }

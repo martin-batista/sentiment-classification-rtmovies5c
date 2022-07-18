@@ -5,7 +5,6 @@ from pathlib import Path
 import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
 
-
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
 task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers_pipe_1 - train/val split')
