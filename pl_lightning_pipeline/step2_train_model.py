@@ -65,6 +65,11 @@ def main(parameters):
 
     #Constructs the data module.
     dm = build_data_module(str(data_path), parameters)
+
+    #Defines training callbacks.
+
+
+    #Trains the model.
     model = train_model(dm, parameters)
     trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=1)
     # trainer.fit(model, dm)
