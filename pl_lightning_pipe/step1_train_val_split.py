@@ -11,7 +11,8 @@ from pipe_conf import PROJECT_NAME
 task = Task.create(project_name=PROJECT_NAME, 
                    task_name='LitTransformers_pipe_1_data_split',
                    task_type='data_processing', #type: ignore 
-                #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                   repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                   script='pl_lightning_pipe/step1_train_val_split.py',
                    add_task_init_call=True,
                    requirements_file = 'requirements.txt',
                 )

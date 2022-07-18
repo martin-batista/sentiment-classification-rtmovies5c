@@ -16,7 +16,8 @@ import logging
 task = Task.create(project_name=PROJECT_NAME, 
                    task_name='LitTransformers_pipe_2_train_model',
                    task_type='data_processing', #type: ignore 
-                #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                   repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                   script='pl_lightning_pipe/step2_train_model.py',
                    add_task_init_call=True,
                    requirements_file = 'requirements.txt',
                  )
