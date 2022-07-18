@@ -102,10 +102,10 @@ def main():
     task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
     task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
     task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique())
+    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance.get_logger()))
     task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
     task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
     task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
-    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_wtask.get_logger()
 
     log_histogram(task, train_data, validation_data, test_data, 
                   title='Data splits', name_1='Train', 
