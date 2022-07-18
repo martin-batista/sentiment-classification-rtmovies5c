@@ -17,7 +17,7 @@ parameters = {
 
 task.connect(parameters)
 
-def get_train_test_data(dataset_id):
+def get_train_test_data():
     task = Task.get_task(task_name='train_test_raw',
                          project_name=PROJECT_NAME)
 
@@ -80,10 +80,9 @@ def train_validation_split(train: pd.DataFrame, validation_split: int, task: Tas
     log_histogram(task, train_data, validation_data, title='Train/Valid splits', name_1='Train', name_2='Valid') 
 
 
-
 def main(task=task, parameters=parameters):
     pl.seed_everything(parameters['seed'])
-    train, test = get_train_test_data(parameters['dataset_id'])
+    train, test = get_train_test_data()
     train_validation_split(train, parameters['validation_split'], task)
 
     #Upload test data:
