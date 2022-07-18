@@ -75,9 +75,8 @@ def main():
     test_data = preprocess_task.artifacts['test_data'].get()
 
     #Constructs the data paths to store the train, validation and test data.
-    # data_path = Path(__file__).parents[1] / 'data' 
-    # interim_path = data_path / 'interim'
-    interim_path = Path('data')
+    data_path = Path(__file__).parents[1] / 'data' 
+    interim_path = data_path / 'interim'
     interim_path.mkdir(parents=True, exist_ok=True)
     # logging.warning(f'Saving data to {interim_path}')
 
@@ -91,7 +90,7 @@ def main():
 
     # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
-    model_path = interim_path / 'models' / f'{model_name}'
+    model_path = data_path / 'models' / f'{model_name}'
     model_path.mkdir(parents=True, exist_ok=True)
 
     checkpoint_callback = ModelCheckpoint(

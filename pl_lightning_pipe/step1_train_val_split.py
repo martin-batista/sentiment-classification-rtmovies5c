@@ -84,7 +84,7 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('GPU')
+    # task.execute_remotely('GPU')
 
     pl.seed_everything(parameters['seed'])
     train, test_data = get_train_test_data(parameters['dataset_id'])
@@ -121,10 +121,28 @@ def main():
     valid_save = validation_data[['label', 'text']].copy()
     test_save = test_data[['label', 'text']].copy()
 
-    task.upload_artifact(name='train_data', artifact_object=train_save, wait_on_upload=True)
-    task.upload_artifact(name='validation_data', artifact_object=valid_save, wait_on_upload=True)
-    task.upload_artifact(name='test_data', artifact_object=test_save, wait_on_upload=True)
-                  
+    # task.upload_artifact(name='train_data', artifact_object=train_save, wait_on_upload=True)
+    # task.upload_artifact(name='validation_data', artifact_object=valid_save, wait_on_upload=True)
+    # task.upload_artifact(name='test_data', artifact_object=test_save, wait_on_upload=True)
+
+    #Constructs the data paths to store the train, validation and test data.
+    data_path = Path(__file__).parents[1] / 'data' 
+    interim_path = data_path / 'interim'
+    interim_path.mkdir(parents=True, exist_ok=True)
+    # logging.warning(f'Saving data to {interim_path}')
+
+    #Stores the data locally for training.
+    train_save.to_json(interim_path / 'train.json', orient='records', lines=True)
+    valid_save.to_json(interim_path / 'valid.json', orient='records', lines=True)
+    test_save.to_json(interim_path / 'test.json', orient='records', lines=True)
+
+    split_dataset = Dataset.create(dataset_name='data_split', 
+                                   dataset_project=PROJECT_NAME,
+                                   parent_datasets=['train_test_raw'])
+
+    split_dataset.add_files(interim_path)
+    split_dataset.upload()
+    split_dataset.finalize()
 
 if __name__ == '__main__':
     main()
