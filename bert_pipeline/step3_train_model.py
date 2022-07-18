@@ -7,7 +7,7 @@ from lightning_transformers.task.nlp.text_classification import (
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_3 train_model')
+# task = Task.init(project_name=PROJECT_NAME, task_name='BERT_pipeline_3_train_model')
 
 parameters = {
     'data_module_task_id': '382edb033962439cb741868df98144dc',
@@ -23,7 +23,7 @@ parameters = {
     'devices': 'auto',
 }
 
-task.connect(parameters)
+# task.connect(parameters)
 
 class ClassificationTransformer(TextClassificationTransformer): 
 
@@ -57,11 +57,11 @@ def train_model(data_module, parameters):
                                        lr = parameters['lr'],
                                        freeze_backbone=parameters['freeze_backbone'])
 
-
 def main(parameters):
     pl.seed_everything(parameters['seed'])
     dm = Task.get_task(task_id=parameters['data_module_task_id']).artifacts['data_module'].get()
-    train_model(dm, parameters)
+    # train_model(dm, parameters)
+    print(dm)
 
 if __name__ == '__main__':
     main(parameters)

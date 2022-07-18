@@ -27,9 +27,9 @@ def build_data_module(data_path, parameters):
     tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
     return TextClassificationDataModule(batch_size=parameters['batch_size'],
                                         max_length=parameters['max_length'], 
-                                        train_file=train_path,
-                                        validation_file=valid_path,
-                                        test_file=test_path,
+                                        train_file=str(train_path),
+                                        validation_file=str(valid_path),
+                                        test_file=str(test_path),
                                         tokenizer=tokenizer)
 
 def main(parameters):
