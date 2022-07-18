@@ -7,7 +7,7 @@ from scipy.stats import wasserstein_distance
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers_pipe_1 - train/val split')
+task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers train_val_split')
 
 parameters = {
     'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',

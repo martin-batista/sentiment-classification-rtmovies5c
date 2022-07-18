@@ -10,7 +10,7 @@ from lightning_transformers.task.nlp.text_classification import (
 
 PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers_pipe_2 - train_model')
+task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers train_model')
 
 parameters = {
     'validation_split': 0.1,
