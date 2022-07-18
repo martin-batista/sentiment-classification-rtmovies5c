@@ -13,30 +13,7 @@ import logging
 # from torch.utils.tensorboard import SummaryWriter
 
 # Task.add_requirements('requirements.txt')
-task = Task.create(project_name=PROJECT_NAME, 
-                   task_name='LitTransformers_pipe_2_train_model',
-                   task_type='data_processing', #type: ignore 
-                   repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-                   script='pl_lightning_pipe/step2_train_model.py',
-                   add_task_init_call=True,
-                   requirements_file = 'requirements.txt',
-                 )
 
-parameters = {
-    'validation_split': 0.1,
-    'seed': 42,
-    'pre_trained_model': 'bert-base-uncased',
-    'batch_size': 16,
-    'max_length': 512,
-    'lr': 2e-5,
-    'freeze_backbone': True,
-    'num_epochs': 3,
-    'accelerator': 'auto',
-    'devices': 'auto',
-}
-
-task.connect(parameters)
-task.execute_remotely('GPU')
 
 
 def build_data_module(path, parameters):
@@ -57,7 +34,33 @@ def train_model(data_module, parameters):
                                        freeze_backbone=parameters['freeze_backbone'])
 
 
-def main(parameters=parameters, task=task):
+def main():
+    task = Task.create(project_name=PROJECT_NAME, 
+                    task_name='LitTransformers_pipe_2_train_model',
+                    task_type='data_processing', #type: ignore 
+                    repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                    script='pl_lightning_pipe/step2_train_model.py',
+                    add_task_init_call=True,
+                    requirements_file = 'requirements.txt',
+                    )
+
+    parameters = {
+        'validation_split': 0.1,
+        'seed': 42,
+        'pre_trained_model': 'bert-base-uncased',
+        'batch_size': 16,
+        'max_length': 512,
+        'lr': 2e-5,
+        'freeze_backbone': True,
+        'num_epochs': 3,
+        'accelerator': 'auto',
+        'devices': 'auto',
+    }
+
+    task.connect(parameters)
+
+    # task.execute_remotely('GPU')
+
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1_data_split',
                                     project_name=PROJECT_NAME)

@@ -79,7 +79,7 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('GPU')
+    # task.execute_remotely('GPU')
 
     pl.seed_everything(parameters['seed'])
     train, test_data = get_train_test_data(parameters['dataset_id'])
