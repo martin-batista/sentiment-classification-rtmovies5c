@@ -137,10 +137,9 @@ def main():
     test_save.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     split_dataset = Dataset.create(dataset_name='data_split', 
-                                   dataset_project=PROJECT_NAME,
-                                   parent_datasets=[SOURCE_DATASET])
+                                   dataset_project=PROJECT_NAME)
 
-    split_dataset.add_files(interim_path)
+    split_dataset.add_files(interim_path, wildcard='*.json')
     split_dataset.upload()
     split_dataset.finalize()
 

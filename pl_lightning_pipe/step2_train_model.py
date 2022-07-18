@@ -1,5 +1,7 @@
-from clearml import Task
+from clearml import Task, Dataset
 from pathlib import Path
+import os
+import shutil
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from transformers import AutoTokenizer # type: ignore
@@ -14,16 +16,14 @@ import logging
 
 # Task.add_requirements('requirements.txt')
 
-
-
-def build_data_module(path, parameters):
+def build_data_module(parameters):
     tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
     valid = parameters['validation_split'] > 0.0
     return TextClassificationDataModule(batch_size=parameters['batch_size'],
                                         max_length=parameters['max_length'], 
-                                        train_file=f'{path}/train.json',
-                                        validation_file= f'{path}/valid.json' if valid else None,
-                                        test_file=f'{path}/test.json',
+                                        train_file='data/interim/train.json',
+                                        validation_file= 'data/interim/valid.json' if valid else None,
+                                        test_file='data/interim/test.json',
                                         tokenizer=tokenizer)
 
 
@@ -64,48 +64,72 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('GPU')
+    # task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1_data_split',
                                     project_name=PROJECT_NAME)
 
-    train_data = preprocess_task.artifacts['train_data'].get()
-    valid_data = preprocess_task.artifacts['validation_data'].get()
-    test_data = preprocess_task.artifacts['test_data'].get()
+    # train_data = preprocess_task.artifacts['train_data'].get()
+    # valid_data = preprocess_task.artifacts['validation_data'].get()
+    # test_data = preprocess_task.artifacts['test_data'].get()
+    dataset_path = Dataset.get(
+            dataset_project=PROJECT_NAME,
+            dataset_name='data_split'
+    ).get_local_copy()
 
-    #Constructs the data paths to store the train, validation and test data.
-    data_path = Path(__file__).parents[1] / 'data' 
-    interim_path = data_path / 'interim'
-    interim_path.mkdir(parents=True, exist_ok=True)
-    # logging.warning(f'Saving data to {interim_path}')
 
-    #Stores the data locally for training.
-    train_data.to_json(interim_path / 'train.json', orient='records', lines=True)
-    valid_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
-    test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
+    train_path = list(Path(dataset_path).glob('train.json'))[0]
+    valid_path = list(Path(dataset_path).glob('valid.json'))[0]
+    test_path = list(Path(dataset_path).glob('test.json'))[0]
 
-    # Constructs the data module.
-    dm = build_data_module(interim_path, parameters)
+    print(train_path)
+    print(valid_path)
+    print(test_path)
 
-    # #Defines training callbacks.
-    model_name = parameters['pre_trained_model']
-    model_path = data_path / 'models' / f'{model_name}'
-    model_path.mkdir(parents=True, exist_ok=True)
+    print(os.getcwd())
+    local_data_path =  Path(os.getcwd()) / 'data' / 'interim'
+    local_data_path.mkdir(parents=True, exist_ok=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val_loss',
-        dirpath=str(model_path))
+    shutil.copy(dataset_path, local_data_path)
+
+    # #Constructs the data paths to store the train, validation and test data.
+    # data_path = Path(__file__).parents[1] / 'data' 
+    # interim_path = data_path / 'interim'
+    # interim_path.mkdir(parents=True, exist_ok=True)
+    # # logging.warning(f'Saving data to {interim_path}')
+
+    # #Stores the data locally for training.
+    # train_data.to_json(interim_path / 'train.json', orient='records', lines=True)
+    # valid_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
+    # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
+
+    # # Constructs the data module.
+    # dm = build_data_module(train_path=str(train_path),
+    #                        valid_path=str(valid_path),
+    #                        test_path=str(test_path),
+    #                        parameters=parameters)
+
+    # print(dm.num_classes)
+
+    # # #Defines training callbacks.
+    # model_name = parameters['pre_trained_model']
+    # model_path = data_path / 'models' / f'{model_name}'
+    # model_path.mkdir(parents=True, exist_ok=True)
+
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_loss',
+    #     dirpath=str(model_path))
     
 
-    #Trains the model.
-    model = train_model(dm, parameters)
-    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
-    trainer.fit(model, dm)
-    trainer.save_checkpoint(f"{model_name}.ckpt")
+    # #Trains the model.
+    # model = train_model(dm, parameters)
+    # trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
+    # trainer.fit(model, dm)
+    # trainer.save_checkpoint(f"{model_name}.ckpt")
 
-    #Stores the trained model as an artifact (zip).
-    # task.upload_artifact(str(model_path), 'model')
+    # #Stores the trained model as an artifact (zip).
+    # # task.upload_artifact(str(model_path), 'model')
 
 
 if __name__ == '__main__':
