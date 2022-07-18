@@ -1,6 +1,6 @@
 from clearml.automation import PipelineController
+from pipe_conf import PROJECT_NAME
 
-PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
 parameters = {
     'validation_split': 0.1,
