@@ -2,7 +2,7 @@
 
 PyYAML==5.4.1
 boto3 == 1.24.31
-clearml == 1.4.1
+clearml == 1.6.2
 lightning_transformers == 0.2.1
 numpy == 1.23.1
 pandas == 1.4.3
