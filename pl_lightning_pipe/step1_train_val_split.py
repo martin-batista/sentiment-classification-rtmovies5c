@@ -7,16 +7,14 @@ import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
 from pipe_conf import PROJECT_NAME
 
-
 # Task.add_requirements('requirements.txt')
-task = Task.init(project_name=PROJECT_NAME, 
-                 task_name='LitTransformers_pipe_1_data_split',
-                 task_type='data_processing', #type: ignore 
+task = Task.create(project_name=PROJECT_NAME, 
+                   task_name='LitTransformers_pipe_1_data_split',
+                   task_type='data_processing', #type: ignore 
                 #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-                #    add_task_init_call=True,
-                #    requirements_file = 'requirements.txt',
+                   add_task_init_call=True,
+                   requirements_file = 'requirements.txt',
                 )
-# task.execute_remotely('GPU')
 
 parameters = {
     'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
@@ -25,6 +23,7 @@ parameters = {
 }
 
 task.connect(parameters)
+task.execute_remotely('GPU')
 
 def get_train_test_data(task_id):
     dataset_task = Task.get_task(task_id)
@@ -83,10 +82,14 @@ def main(parameters=parameters, task=task):
     train, test_data = get_train_test_data(parameters['dataset_id'])
     train_data, validation_data = train_validation_split(train, parameters['validation_split'], task)
 
+    train_json = train_data[['label', 'text']].to_json(orient='records')
+    valid_json = validation_data[['label', 'text']].to_json(orient='records')
+    test_json = test_data[['label', 'text']].to_json(orient='records')
+
     #Store the data:
-    task.upload_artifact(name='train_data', artifact_object=train_data[['label','text']].copy(), wait_on_upload=True)
-    task.upload_artifact(name='validation_data', artifact_object=validation_data[['label','text']].copy(), wait_on_upload=True)
-    task.upload_artifact(name='test_data', artifact_object=test_data[['label', 'text']].copy(), wait_on_upload=True)
+    task.upload_artifact(name='train_data', artifact_object=train_json, wait_on_upload=True)
+    task.upload_artifact(name='validation_data', artifact_object=valid_json, wait_on_upload=True)
+    task.upload_artifact(name='test_data', artifact_object=test_json, wait_on_upload=True)
 
     #Wasserstein distance between distributions:
     w_distance_train_valid = wasserstein_distance(train_data['label'].values, validation_data['label'].values)
@@ -96,22 +99,22 @@ def main(parameters=parameters, task=task):
     mean_w_distance = (w_distance_train_valid + w_distance_train_test + w_distance_test_valid)/3
 
     #Log data information:
-    task.get_logger().report_table(title='Train examples',series='pandas DataFrame',iteration=0,table_plot=train_data)
-    task.get_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
-    task.get_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test_data)
+    Logger.current_logger().report_table(title='Train examples',series='pandas DataFrame',iteration=0,table_plot=train_data)
+    Logger.current_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
+    Logger.current_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test_data)
 
-    task.get_logger().report_single_value('Train size', len(train_data)) 
-    task.get_logger().report_single_value('Validation size', len(validation_data)) 
-    task.get_logger().report_single_value('Test size', len(test_data))
+    Logger.current_logger().report_single_value('Train size', len(train_data)) 
+    Logger.current_logger().report_single_value('Validation size', len(validation_data)) 
+    Logger.current_logger().report_single_value('Test size', len(test_data))
 
-    task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
-    task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
-    task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique()) 
+    Logger.current_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
+    Logger.current_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
+    Logger.current_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique()) 
 
-    task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
-    task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
-    task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
-    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  
+    Logger.current_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
+    Logger.current_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
+    Logger.current_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
+    Logger.current_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  
 
 
     log_histogram(task, train_data, validation_data, test_data, 

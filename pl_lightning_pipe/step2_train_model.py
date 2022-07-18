@@ -11,15 +11,14 @@ from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
 # from torch.utils.tensorboard import SummaryWriter
 
-Task.add_requirements('requirements.txt')
-task = Task.init(project_name=PROJECT_NAME, 
+# Task.add_requirements('requirements.txt')
+task = Task.create(project_name=PROJECT_NAME, 
                    task_name='LitTransformers_pipe_2_train_model',
                    task_type='data_processing', #type: ignore 
                 #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-                #    add_task_init_call=True,
-                #    requirements_file = 'requirements.txt',
+                   add_task_init_call=True,
+                   requirements_file = 'requirements.txt',
                  )
-# task.execute_remotely('GPU')
 
 parameters = {
     'validation_split': 0.1,
@@ -35,6 +34,8 @@ parameters = {
 }
 
 task.connect(parameters)
+task.execute_remotely('GPU')
+
 
 def build_data_module(path, parameters):
     tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
@@ -76,7 +77,7 @@ def main(parameters=parameters, task=task):
     #Constructs the data module.
     dm = build_data_module(interim_path, parameters)
 
-    #Defines training callbacks.
+    # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
     model_path = data_path / 'models' / f'{model_name}'
     model_path.mkdir(parents=True, exist_ok=True)
@@ -86,11 +87,9 @@ def main(parameters=parameters, task=task):
         dirpath=str(model_path))
     
 
-    logger = TensorBoardLogger("tb_logs", name=model_name)
-
     #Trains the model.
     model = train_model(dm, parameters)
-    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=1, logger=logger, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=5, logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
     trainer.fit(model, dm)
 
     #Stores the trained model as an artifact (zip).
@@ -98,6 +97,7 @@ def main(parameters=parameters, task=task):
 
 
 if __name__ == '__main__':
+
     main()
 
 
