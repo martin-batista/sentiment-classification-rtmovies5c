@@ -11,7 +11,7 @@ task = Task.init(project_name=PROJECT_NAME,
                  task_name='train_val_split',
                  task_type='data_processing', #type: ignore 
                  )
-task.add_requirements("PyYAML")
+task.add_requirements('requirements.txt')
 
 parameters = {
     'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
