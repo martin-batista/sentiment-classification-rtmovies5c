@@ -9,8 +9,9 @@ from lightning_transformers.task.nlp.text_classification import (
 )
 from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
+# from torch.utils.tensorboard import SummaryWriter
 
-# Task.add_requirements('requirements.txt')
+Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
                    task_name='LitTransformers_pipe_2_train_model',
                    task_type='data_processing', #type: ignore 
@@ -18,7 +19,7 @@ task = Task.init(project_name=PROJECT_NAME,
                 #    add_task_init_call=True,
                 #    requirements_file = 'requirements.txt',
                  )
-task.execute_remotely('GPU')
+# task.execute_remotely('GPU')
 
 parameters = {
     'validation_split': 0.1,

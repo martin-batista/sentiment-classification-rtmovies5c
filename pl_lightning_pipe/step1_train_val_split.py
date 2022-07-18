@@ -8,14 +8,14 @@ from scipy.stats import wasserstein_distance
 from pipe_conf import PROJECT_NAME
 
 
-Task.add_requirements('requirements.txt')
+# Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
-                   task_name='LitTransformers_pipe_1_data_split',
-                   task_type='data_processing', #type: ignore 
+                 task_name='LitTransformers_pipe_1_data_split',
+                 task_type='data_processing', #type: ignore 
                 #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
                 #    add_task_init_call=True,
                 #    requirements_file = 'requirements.txt',
-                 )
+                )
 # task.execute_remotely('GPU')
 
 parameters = {
