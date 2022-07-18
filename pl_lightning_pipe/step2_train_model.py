@@ -7,10 +7,16 @@ from pl_transformer import ClassificationTransformer
 from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
+from pipe_conf import PROJECT_NAME
 
-PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
-task = Task.init(project_name=PROJECT_NAME, task_name='LitTransformers train_model')
+task = Task.create(project_name=PROJECT_NAME, 
+                   task_name='LitTransformers_pipe_2 - train_model',
+                   task_type='data_processing', #type: ignore 
+                #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                   add_task_init_call=True,
+                   requirements_file = 'requirements.txt',
+                 )
 
 parameters = {
     'validation_split': 0.1,

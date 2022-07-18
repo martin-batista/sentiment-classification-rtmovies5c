@@ -4,15 +4,15 @@ import numpy as np
 from pathlib import Path
 import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
+from pipe_conf import PROJECT_NAME
 
-PROJECT_NAME = 'sentiment-classification-rtmovies5c'
 
 task = Task.create(project_name=PROJECT_NAME, 
-                 task_name='train_val_split',
-                 task_type='data_processing', #type: ignore 
-                #  repo='martin-batista/sentiment-classification-rtmovies5c',
-                 add_task_init_call=True,
-                 requirements_file = 'requirements.txt',
+                   task_name='LitTransformers_pipe_1 - train/val split',
+                   task_type='data_processing', #type: ignore 
+                #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
+                   add_task_init_call=True,
+                   requirements_file = 'requirements.txt',
                  )
 
 parameters = {
@@ -97,18 +97,18 @@ def main(parameters=parameters):
     task.get_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
     task.get_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test_data)
 
-    # task.get_logger().report_single_value('Train size', len(train_data)) 
-    # task.get_logger().report_single_value('Validation size', len(validation_data)) 
-    # task.get_logger().report_single_value('Test size', len(test_data))
+    task.get_logger().report_single_value('Train size', len(train_data)) 
+    task.get_logger().report_single_value('Validation size', len(validation_data)) 
+    task.get_logger().report_single_value('Test size', len(test_data))
 
-    # task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
-    # task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
-    # task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique()) 
+    task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
+    task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
+    task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique()) 
 
-    # task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
-    # task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
-    # task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
-    # task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  
+    task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
+    task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
+    task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
+    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  
 
 
     log_histogram(task, train_data, validation_data, test_data, 
