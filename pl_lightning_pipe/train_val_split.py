@@ -91,18 +91,18 @@ def main(task=task, parameters=parameters):
     task.get_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
     task.get_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test_data)
 
-    task.get_logger().report_single_value('Train size', len(train_data))
-    task.get_logger().report_single_value('Validation size', len(validation_data))
-    task.get_logger().report_single_value('Test size', len(test_data))
+    task.get_logger().report_single_value('Train size', len(train_data))  # type: ignore
+    task.get_logger().report_single_value('Validation size', len(validation_data))  # type: ignore
+    task.get_logger().report_single_value('Test size', len(test_data))  # type: ignore
 
-    task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
-    task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())
-    task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique())
+    task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())  # type: ignore
+    task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  # type: ignore
+    task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique())  # type: ignore
 
-    task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))
-    task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))
-    task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5))
-    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))
+    task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  # type: ignore
+    task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  # type: ignore
+    task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5))  # type: ignore
+    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  # type: ignore
 
 
     log_histogram(task, train_data, validation_data, test_data, 
