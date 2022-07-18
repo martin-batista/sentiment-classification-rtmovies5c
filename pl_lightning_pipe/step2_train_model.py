@@ -8,6 +8,7 @@ from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
 from pipe_conf import PROJECT_NAME
+from pytorch_lightning.loggers import TensorBoardLogger
 
 
 task = Task.create(project_name=PROJECT_NAME, 
@@ -81,10 +82,13 @@ def main(parameters=parameters, task=task):
     checkpoint_callback = ModelCheckpoint(
         monitor='val_loss',
         dirpath=str(model_path))
+    
+
+    logger = TensorBoardLogger("tb_logs", name=model_name)
 
     #Trains the model.
     model = train_model(dm, parameters)
-    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=1, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=1, logger=logger, callbacks=[checkpoint_callback])
     trainer.fit(model, dm)
 
     #Stores the trained model as an artifact (zip).
