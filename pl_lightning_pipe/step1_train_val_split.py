@@ -1,4 +1,5 @@
-from clearml import Dataset, Task
+from typing import overload
+from clearml import Dataset, Task, Logger
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -7,13 +8,15 @@ from scipy.stats import wasserstein_distance
 from pipe_conf import PROJECT_NAME
 
 
-task = Task.create(project_name=PROJECT_NAME, 
-                   task_name='LitTransformers_pipe_1 - train/val split',
+Task.add_requirements('requirements.txt')
+task = Task.init(project_name=PROJECT_NAME, 
+                   task_name='LitTransformers_pipe_1_data_split',
                    task_type='data_processing', #type: ignore 
                 #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-                   add_task_init_call=True,
-                   requirements_file = 'requirements.txt',
+                #    add_task_init_call=True,
+                #    requirements_file = 'requirements.txt',
                  )
+# task.execute_remotely('GPU')
 
 parameters = {
     'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
@@ -75,15 +78,15 @@ def log_histogram(task, df_1, df_2, df_3, title, name_1, name_2, name_3):
     )
 
 
-def main(parameters=parameters):
+def main(parameters=parameters, task=task):
     pl.seed_everything(parameters['seed'])
     train, test_data = get_train_test_data(parameters['dataset_id'])
     train_data, validation_data = train_validation_split(train, parameters['validation_split'], task)
 
     #Store the data:
-    task.upload_artifact(name='train_data', artifact_object=train_data[['label','text']])
-    task.upload_artifact(name='validation_data', artifact_object=validation_data[['label','text']])
-    task.upload_artifact(name='test_data', artifact_object=test_data[['label', 'text']])
+    task.upload_artifact(name='train_data', artifact_object=train_data[['label','text']].copy(), wait_on_upload=True)
+    task.upload_artifact(name='validation_data', artifact_object=validation_data[['label','text']].copy(), wait_on_upload=True)
+    task.upload_artifact(name='test_data', artifact_object=test_data[['label', 'text']].copy(), wait_on_upload=True)
 
     #Wasserstein distance between distributions:
     w_distance_train_valid = wasserstein_distance(train_data['label'].values, validation_data['label'].values)

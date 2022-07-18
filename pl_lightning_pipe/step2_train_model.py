@@ -10,14 +10,15 @@ from lightning_transformers.task.nlp.text_classification import (
 from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
 
-
-task = Task.create(project_name=PROJECT_NAME, 
-                   task_name='LitTransformers_pipe_2 - train_model',
+# Task.add_requirements('requirements.txt')
+task = Task.init(project_name=PROJECT_NAME, 
+                   task_name='LitTransformers_pipe_2_train_model',
                    task_type='data_processing', #type: ignore 
                 #  repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-                   add_task_init_call=True,
-                   requirements_file = 'requirements.txt',
+                #    add_task_init_call=True,
+                #    requirements_file = 'requirements.txt',
                  )
+task.execute_remotely('GPU')
 
 parameters = {
     'validation_split': 0.1,
@@ -54,7 +55,7 @@ def train_model(data_module, parameters):
 
 def main(parameters=parameters, task=task):
     #Grabs the preprocessed data from the previous step:
-    preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1 - train/val split',
+    preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1_data_split',
                                     project_name=PROJECT_NAME)
 
     train_data = preprocess_task.artifacts['train_data'].get()
