@@ -45,7 +45,7 @@ def train_model(data_module, parameters):
                                        freeze_backbone=parameters['freeze_backbone'])
 
 
-def main(parameters=parametera, task=task):
+def main(parameters=parameters, task=task):
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1 - train/val split',
                                     project_name=PROJECT_NAME)
