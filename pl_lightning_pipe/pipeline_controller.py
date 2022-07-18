@@ -57,5 +57,5 @@ pipe.add_step(
 )
 
 if __name__ == '__main__':
-    pipe.set_default_execution_queue('GPU_1')
+    pipe.set_default_execution_queue('GPU')
     pipe.start()

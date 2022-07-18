@@ -2,3 +2,4 @@
 /lightning_logs/
 /.vscode
 /clearml_credentials.txt
+/notebooks/remote_gpu.ipynb
