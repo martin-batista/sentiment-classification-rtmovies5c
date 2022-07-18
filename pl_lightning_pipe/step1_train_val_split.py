@@ -18,7 +18,7 @@ def get_train_test_data(task_id):
 
     return train, test
 
-def train_validation_split(train: pd.DataFrame, validation_split: int, task: Task):
+def train_validation_split(train: pd.DataFrame, validation_split: int):
 
     idxs = train['SentenceId'].unique()
     train_mask = np.random.choice(idxs, int(len(idxs)*(1- validation_split)), replace=False)
@@ -83,7 +83,7 @@ def main():
 
     pl.seed_everything(parameters['seed'])
     train, test_data = get_train_test_data(parameters['dataset_id'])
-    train_data, validation_data = train_validation_split(train, parameters['validation_split'], task)
+    train_data, validation_data = train_validation_split(train, parameters['validation_split'])
 
     #Wasserstein distance between distributions:
     w_distance_train_valid = wasserstein_distance(train_data['label'].values, validation_data['label'].values)
@@ -102,7 +102,7 @@ def main():
     task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
     task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
     task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique())
-    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance.get_logger()))
+    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance, 5))
     task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
     task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
     task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
