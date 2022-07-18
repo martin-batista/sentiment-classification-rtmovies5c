@@ -82,15 +82,6 @@ def main(parameters=parameters, task=task):
     train, test_data = get_train_test_data(parameters['dataset_id'])
     train_data, validation_data = train_validation_split(train, parameters['validation_split'], task)
 
-    train_json = train_data[['label', 'text']].to_json(orient='records')
-    valid_json = validation_data[['label', 'text']].to_json(orient='records')
-    test_json = test_data[['label', 'text']].to_json(orient='records')
-
-    #Store the data:
-    task.upload_artifact(name='train_data', artifact_object=train_json, wait_on_upload=True)
-    task.upload_artifact(name='validation_data', artifact_object=valid_json, wait_on_upload=True)
-    task.upload_artifact(name='test_data', artifact_object=test_json, wait_on_upload=True)
-
     #Wasserstein distance between distributions:
     w_distance_train_valid = wasserstein_distance(train_data['label'].values, validation_data['label'].values)
     w_distance_train_test = wasserstein_distance(train_data['label'].values, test_data['label'].values)
@@ -99,27 +90,37 @@ def main(parameters=parameters, task=task):
     mean_w_distance = (w_distance_train_valid + w_distance_train_test + w_distance_test_valid)/3
 
     #Log data information:
-    Logger.current_logger().report_table(title='Train examples',series='pandas DataFrame',iteration=0,table_plot=train_data)
-    Logger.current_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
-    Logger.current_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test_data)
+    task.get_logger().report_table(title='Train examples',series='pandas DataFrame',iteration=0,table_plot=train_data)
+    task.get_logger().report_table(title='Validation examples',series='pandas DataFrame',iteration=0,table_plot=validation_data)
+    task.get_logger().report_table(title='Test examples',series='pandas DataFrame',iteration=0,table_plot=test_data)
 
-    Logger.current_logger().report_single_value('Train size', len(train_data)) 
-    Logger.current_logger().report_single_value('Validation size', len(validation_data)) 
-    Logger.current_logger().report_single_value('Test size', len(test_data))
+    task.get_logger().report_single_value('Train size', len(train_data)) 
+    task.get_logger().report_single_value('Validation size', len(validation_data)) 
+    task.get_logger().report_single_value('Test size', len(test_data))
 
-    Logger.current_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
-    Logger.current_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
-    Logger.current_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique()) 
+    task.get_logger().report_single_value('Train sentences', train_data['SentenceId'].nunique())
+    task.get_logger().report_single_value('Validation sentences', validation_data['SentenceId'].nunique())  
+    task.get_logger().report_single_value('Test sentences', test_data['SentenceId'].nunique()) 
 
-    Logger.current_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
-    Logger.current_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
-    Logger.current_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
-    Logger.current_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  
+    task.get_logger().report_single_value('Wasserstein train/valid', round(w_distance_train_valid,5))  
+    task.get_logger().report_single_value('Wasserstein train/test', round(w_distance_train_test,5))  
+    task.get_logger().report_single_value('Wasserstein test/valid', round(w_distance_test_valid,5)) 
+    task.get_logger().report_single_value('Mean Wasserstein distance', round(mean_w_distance,5))  
 
 
     log_histogram(task, train_data, validation_data, test_data, 
                   title='Data splits', name_1='Train', 
                   name_2='Valid', name_3='Test') 
+
+    #Store the data:
+    train_json = train_data[['label', 'text']].to_json(orient='records')
+    valid_json = validation_data[['label', 'text']].to_json(orient='records')
+    test_json = test_data[['label', 'text']].to_json(orient='records')
+
+    task.upload_artifact(name='train_data', artifact_object=train_json, wait_on_upload=True)
+    task.upload_artifact(name='validation_data', artifact_object=valid_json, wait_on_upload=True)
+    task.upload_artifact(name='test_data', artifact_object=test_json, wait_on_upload=True)
+                  
 
 if __name__ == '__main__':
     main()

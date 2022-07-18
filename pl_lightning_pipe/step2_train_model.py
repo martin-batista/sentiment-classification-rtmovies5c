@@ -9,6 +9,7 @@ from lightning_transformers.task.nlp.text_classification import (
 )
 from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
+import logging
 # from torch.utils.tensorboard import SummaryWriter
 
 # Task.add_requirements('requirements.txt')
@@ -68,36 +69,36 @@ def main(parameters=parameters, task=task):
     data_path = Path(__file__).parents[1] / 'data' 
     interim_path = data_path / 'interim'
     interim_path.mkdir(parents=True, exist_ok=True)
+    logging.warning(f'Saving data to {interim_path}')
 
     #Stores the data locally for training.
-    train_data.to_json(interim_path / 'train.json', orient='records', lines=True)
-    valid_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
-    test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
+    # train_data.to_json(interim_path / 'train.json', orient='records', lines=True)
+    # valid_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
+    # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     #Constructs the data module.
-    dm = build_data_module(interim_path, parameters)
+    # dm = build_data_module(interim_path, parameters)
 
-    # #Defines training callbacks.
-    model_name = parameters['pre_trained_model']
-    model_path = data_path / 'models' / f'{model_name}'
-    model_path.mkdir(parents=True, exist_ok=True)
+    # # #Defines training callbacks.
+    # model_name = parameters['pre_trained_model']
+    # model_path = data_path / 'models' / f'{model_name}'
+    # model_path.mkdir(parents=True, exist_ok=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val_loss',
-        dirpath=str(model_path))
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_loss',
+    #     dirpath=str(model_path))
     
 
-    #Trains the model.
-    model = train_model(dm, parameters)
-    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=5, logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
-    trainer.fit(model, dm)
+    # #Trains the model.
+    # model = train_model(dm, parameters)
+    # trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=5, logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
+    # trainer.fit(model, dm)
 
-    #Stores the trained model as an artifact (zip).
-    task.upload_artifact(str(model_path), 'model')
+    # #Stores the trained model as an artifact (zip).
+    # task.upload_artifact(str(model_path), 'model')
 
 
 if __name__ == '__main__':
-
     main()
 
 
