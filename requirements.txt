@@ -9,7 +9,8 @@ pandas
 pytorch_lightning == 1.6.5
 scipy 
 tensorboard == 2.9.0
-torch == 1.12.0 --extra-index-url https://download.pytorch.org/whl/cu116 
-torchvision == 0.13.0 --extra-index-url https://download.pytorch.org/whl/cu116
-torchaudio == 0.12.0 --extra-index-url https://download.pytorch.org/whl/cu116
+torch == 1.12.0
+torchvision == 0.13.0
+torchaudio == 0.12.0 
 transformers == 4.20.1
+-f https://download.pytorch.org/whl/cu116
