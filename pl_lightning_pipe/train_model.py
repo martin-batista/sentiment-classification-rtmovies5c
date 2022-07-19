@@ -1,8 +1,6 @@
-from clearml import Task, Dataset
+from clearml import Task
 from pathlib import Path
 import torch
-import os
-import shutil
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from torch import Tensor
@@ -12,7 +10,13 @@ from lightning_transformers.task.nlp.text_classification import (
 )
 from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
-from torchsummary import summary
+from torch import nn
+from torch.utils.data import DataLoader
+from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
+from torchmetrics import Accuracy, ConfusionMatrix
+import pytorch_lightning as pl
+from transformers import AutoModel, AutoConfig, AutoTokenizer
+
 # from torch.utils.tensorboard import SummaryWriter
 
 # Task.add_requirements('requirements.txt')
