@@ -64,7 +64,7 @@ def main():
     }
 
     task.connect(parameters)
-    # task.execute_remotely('GPU')
+    task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1_data_split',
@@ -83,15 +83,13 @@ def main():
     valid_path = list(Path(dataset_path).glob('valid.json'))[0]
     test_path = list(Path(dataset_path).glob('test.json'))[0]
 
-    print(train_path)
-    print(valid_path)
-    print(test_path)
-
-    print(os.getcwd())
     local_data_path =  Path(os.getcwd()) / 'data' / 'interim'
     local_data_path.mkdir(parents=True, exist_ok=True)
 
-    shutil.copy(dataset_path, local_data_path)
+    shutil.move(train_path, local_data_path / 'train.json')
+    shutil.move(valid_path, local_data_path / 'valid.json')
+    shutil.move(test_path, local_data_path / 'test.json')
+
 
     # #Constructs the data paths to store the train, validation and test data.
     # data_path = Path(__file__).parents[1] / 'data' 
@@ -105,31 +103,27 @@ def main():
     # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     # # Constructs the data module.
-    # dm = build_data_module(train_path=str(train_path),
-    #                        valid_path=str(valid_path),
-    #                        test_path=str(test_path),
-    #                        parameters=parameters)
+    dm = build_data_module(parameters=parameters)
+    print(dm.num_classes)
 
-    # print(dm.num_classes)
+    # #Defines training callbacks.
+    model_name = parameters['pre_trained_model']
+    model_path = data_path / 'models' / f'{model_name}'
+    model_path.mkdir(parents=True, exist_ok=True)
 
-    # # #Defines training callbacks.
-    # model_name = parameters['pre_trained_model']
-    # model_path = data_path / 'models' / f'{model_name}'
-    # model_path.mkdir(parents=True, exist_ok=True)
-
-    # checkpoint_callback = ModelCheckpoint(
-    #     monitor='val_loss',
-    #     dirpath=str(model_path))
+    checkpoint_callback = ModelCheckpoint(
+        monitor='val_loss',
+        dirpath=str(model_path))
     
 
-    # #Trains the model.
-    # model = train_model(dm, parameters)
-    # trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
-    # trainer.fit(model, dm)
-    # trainer.save_checkpoint(f"{model_name}.ckpt")
+    #Trains the model.
+    model = train_model(dm, parameters)
+    trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
+    trainer.fit(model, dm)
+    trainer.save_checkpoint(f"{model_name}.ckpt")
 
-    # #Stores the trained model as an artifact (zip).
-    # # task.upload_artifact(str(model_path), 'model')
+    #Stores the trained model as an artifact (zip).
+    task.upload_artifact(str(model_path), 'model')
 
 
 if __name__ == '__main__':
