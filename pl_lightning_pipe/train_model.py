@@ -46,11 +46,9 @@ task.connect(parameters)
 
 class BertBase(pl.LightningModule):
     
-    def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test,
-                 max_seq_len=512, batch_size=16, learning_rate = 2e-5, lr_schedule = False,
-                 model_str = 'bert-base-uncased', train_backbone = False, hidden_size = 768, head_depth = 1,
-                 head_hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5,
-                 num_train_steps = 12):
+    def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test, model_str,
+                 max_seq_len=512, batch_size=16, learning_rate = 2e-5, hidden_size = 768,
+                 head_hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5):
         super().__init__()
         self.learning_rate = learning_rate
         self.max_seq_len = max_seq_len
@@ -77,7 +75,7 @@ class BertBase(pl.LightningModule):
         # The fine-tuning model head:
         layers = []
         layers.append(nn.Linear(self.hparams.hidden_size, self.hparams.num_classes))
-        layers.append(nn.Dropout(0.1))
+        layers.append(nn.Dropout(self.hparams.head_dropout))
         layers.append(nn.LogSoftmax(dim=1))
         self.new_layers = nn.Sequential(*layers)
 
