@@ -69,10 +69,9 @@ class BertBase(pl.LightningModule):
         self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
 
         # The fine-tuning model head:
-        layers = []
-        layers.append(nn.Linear(self.hparams.hidden_size, self.hparams.num_classes)) # type: ignore
+        layers = [nn.Linear(self.hparams.hidden_size, self.hparams.num_classes)] # type: ignore
         layers.append(nn.Dropout(self.hparams.head_dropout)) # type: ignore
-        layers.append(nn.LogSoftmax(dim=1))
+        # layers.append(nn.LogSoftmax(dim=1))
         self.new_layers = nn.Sequential(*layers)
 
     def prepare_data(self):
