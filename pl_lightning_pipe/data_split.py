@@ -120,9 +120,9 @@ def main():
     test_save = test_data[['label', 'text']].copy()
 
     #Stores data as artifacts.:w:w
-    task.upload_artifact(name='train_data', artifact_object=train_save.to_json(orient='records', lines=True), wait_on_upload=True)
-    task.upload_artifact(name='validation_data', artifact_object=valid_save.to_json(orient='records', lines=True), wait_on_upload=True)
-    task.upload_artifact(name='test_data', artifact_object=test_save.to_json(orient='records', lines=True), wait_on_upload=True)
+    task.upload_artifact(name='train_data.json', artifact_object=train_save.to_json(orient='records', lines=True), wait_on_upload=True)
+    task.upload_artifact(name='validation_data.json', artifact_object=valid_save.to_json(orient='records', lines=True), wait_on_upload=True)
+    task.upload_artifact(name='test_data.json', artifact_object=test_save.to_json(orient='records', lines=True), wait_on_upload=True)
 
     #Constructs the data paths to store the train, validation and test data.
     # data_path = Path(__file__).parents[1] / 'data' 

@@ -64,21 +64,21 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('default')
+    # task.execute_remotely('default')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
 
-    train_data = preprocess_task.artifacts['train_data'].get()
+    train_data = preprocess_task.artifacts['train_data'].get_local_copy()
     valid_data = preprocess_task.artifacts['validation_data'].get()
     test_data = preprocess_task.artifacts['test_data'].get()
     # dataset_path = Dataset.get(
     #         dataset_project=PROJECT_NAME,
     #         dataset_name='data_split'
     # ).get_local_copy()
+    print(train_data)
 
-    print(train_data[:20])
 
 
     # train_path = list(Path(dataset_path).glob('train.json'))[0]
