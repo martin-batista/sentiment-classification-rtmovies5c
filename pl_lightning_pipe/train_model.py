@@ -16,14 +16,14 @@ import logging
 
 # Task.add_requirements('requirements.txt')
 
-def build_data_module(parameters):
+def build_data_module(path, parameters):
     tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
     valid = parameters['validation_split'] > 0.0
     return TextClassificationDataModule(batch_size=parameters['batch_size'],
                                         max_length=parameters['max_length'], 
-                                        train_file='data/interim/train.json',
-                                        validation_file= 'data/interim/valid.json' if valid else None,
-                                        test_file='data/interim/test.json',
+                                        train_file= str(Path(path) / 'train.json'),
+                                        validation_file= str(Path(path) / 'valid.json') if valid else None,
+                                        test_file=str(Path(path) / 'test.json'),
                                         tokenizer=tokenizer)
 
 
@@ -107,7 +107,8 @@ def main():
     # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     # # # Constructs the data module.
-    # dm = build_data_module(parameters=parameters)
+    dm = build_data_module(path = local_interim_data_path, parameters=parameters)
+    print(dm.num_classes)
 
     # # #Defines training callbacks.
     # model_name = parameters['pre_trained_model']
