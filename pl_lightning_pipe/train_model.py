@@ -138,8 +138,7 @@ def main():
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, model_str=model_name)
 
     # model = train_model(dm, parameters)
-    logger = TensorBoardLogger
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], logger=logger)
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], logger=True)
     trainer.fit(model)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
