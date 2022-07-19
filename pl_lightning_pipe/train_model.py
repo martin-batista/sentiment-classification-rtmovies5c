@@ -1,4 +1,5 @@
 from clearml import Task
+import os
 from pathlib import Path
 import torch
 import pandas as pd
@@ -35,7 +36,6 @@ parameters = {
         'batch_size': 16,
         'max_length': 512,
         'lr': 2e-5,
-        'freeze_backbone': True,
         'num_epochs': 3,
         'accelerator': 'auto',
         'devices': 'auto',
@@ -46,17 +46,16 @@ task.connect(parameters)
 
 class BertBase(pl.LightningModule):
     
-    def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test, model_str,
-                 max_seq_len=512, batch_size=16, learning_rate = 2e-5, hidden_size = 768,
-                 head_hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5):
+    def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test, params,
+                 hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5):
         super().__init__()
-        self.learning_rate = learning_rate
-        self.max_seq_len = max_seq_len
-        self.batch_size = batch_size
+        self.learning_rate = params['lr']
+        self.max_seq_len = params['max_length']
+        self.batch_size = params['batch_size']
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
         self.confusion_matrix = ConfusionMatrix(num_classes)
-        self.model_str = model_str
+        self.model_str = params['pre_trained_model']
         self.save_hyperparameters()
 
         self.x_train = x_train
@@ -68,9 +67,6 @@ class BertBase(pl.LightningModule):
 
         self.config = AutoConfig.from_pretrained(self.model_str)
         self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
-
-        # for param in self.pretrain_model.parameters():
-        #     param.requires_grad = False
 
         # The fine-tuning model head:
         layers = []
@@ -123,10 +119,7 @@ class BertBase(pl.LightningModule):
 
     def forward(self, encode_id, mask): 
         outputs = self.pretrain_model(encode_id, attention_mask=mask)
-        output = self.new_layers(outputs.pooler_output)
-       # print(outputs.last_hidden_state.shape)
-      #  print(output.shape)
-        return output
+        return self.new_layers(outputs.pooler_output)
 
     def train_dataloader(self):
       train_dataset = TensorDataset(self.train_seq, self.train_mask, self.train_y)
@@ -189,17 +182,6 @@ class BertBase(pl.LightningModule):
 
 
 def main():
-    # task = Task.create(project_name=PROJECT_NAME, 
-    #                 task_name='LitTransformers_pipe_2_train_model',
-    #                 task_type='data_processing', #type: ignore 
-    #                 repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-    #                 script='pl_lightning_pipe/step2_train_model.py',
-    #                 add_task_init_call=True,
-    #                 requirements_file = 'requirements.txt',
-    #                 )
-
-
-
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
@@ -215,73 +197,31 @@ def main():
     test = pd.read_csv(test_data)
     valid = pd.read_csv(valid_data)
 
-    # print('CUDA AVIALABLE:', torch.cuda.is_available())
+    local_data_path = Path(os.getcwd()) / 'data' 
     
-    # dataset_path = Dataset.get(
-    #         dataset_project=PROJECT_NAME,
-    #         dataset_name='data_split'
-    # ).get_local_copy()
-    # print(train_data)
-
-
-
-    # train_path = list(Path(dataset_path).glob('train.json'))[0]
-    # valid_path = list(Path(dataset_path).glob('valid.json'))[0]
-    # test_path = list(Path(dataset_path).glob('test.json'))[0]
-
-    # local_data_path = Path(os.getcwd()) / 'data' 
-    # local_interim_data_path = local_data_path / 'interim'
-    # local_interim_data_path.mkdir(parents=True, exist_ok=True)
-
-    # shutil.move(train_path, local_interim_data_path / 'train.json')
-    # shutil.move(valid_path, local_interim_data_path / 'valid.json')
-    # shutil.move(test_path, local_interim_data_path / 'test.json')
-
-    # print(os.listdir(os.getcwd()))
-    # print(os.listdir(local_data_path))
-    # print(os.listdir(local_interim_data_path))
-
-    # #Constructs the data paths to store the train, validation and test data.
-    # data_path = Path(__file__).parents[1] / 'data' 
-    # interim_path = data_path / 'interim'
-    # interim_path.mkdir(parents=True, exist_ok=True)
-    # # logging.warning(f'Saving data to {interim_path}')
-
-    # #Stores the data locally for training.
-    # train_data.to_json(interim_path / 'train.json', orient='records', lines=True)
-    # valid_data.to_json(interim_path / 'valid.json', orient='records', lines=True)
-    # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
-
-    # # # Constructs the data module.
-    # data_path = Path('data/interim')
-    # dm = build_data_module(train_path=str(data_path / 'train_data.json'), 
-    #                        valid_path=str(data_path / 'valid_data.json'),
-    #                        test_path=str(data_path / 'test_data.json'),
-    #                        parameters=parameters)
-    # print(dm.num_classes)
-
     # # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
-    # model_path = local_data_path / 'models' / f'{model_name}'
+    model_path = local_data_path / 'models' / f'{model_name}'
     # model_path.mkdir(parents=True, exist_ok=True)
 
-    # checkpoint_callback = ModelCheckpoint(
-    #     monitor='val_loss',
-    #     dirpath=str(model_path))
+    checkpoint_callback = ModelCheckpoint(
+        monitor='val_loss',
+        dirpath=str(model_path)
+        )
     
-
     # #Trains the model.
     x_train, x_val, x_test = train['text'], valid['text'], test['text']
     y_train, y_val, y_test = train['label'], valid['label'], test['label']
-    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, batch_size=parameters['batch_size'], model_str=model_name)
+    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, parameters)
 
     # # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator='gpu', logger=True)
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+                         devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
     trainer.fit(model)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # #Stores the trained model as an artifact (zip).:w
-    # task.upload_artifact(str(model_path), 'model')
+    task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
 
 
 if __name__ == '__main__':
