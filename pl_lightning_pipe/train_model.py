@@ -21,6 +21,12 @@ from transformers import AutoModel, AutoConfig, AutoTokenizer
 # from torch.utils.tensorboard import SummaryWriter
 
 # Task.add_requirements('requirements.txt')
+Task.add_requirements('requirements.txt')
+task = Task.init(project_name=PROJECT_NAME, 
+                task_name='train_model',
+                task_type='training', #type: ignore 
+                )
+
 
 class BertBase(pl.LightningModule):
     
@@ -177,12 +183,6 @@ def main():
     #                 add_task_init_call=True,
     #                 requirements_file = 'requirements.txt',
     #                 )
-
-    Task.add_requirements('requirements.txt')
-    task = Task.init(project_name=PROJECT_NAME, 
-                    task_name='train_model',
-                    task_type='training', #type: ignore 
-                    )
 
     parameters = {
         'validation_split': 0.1,
