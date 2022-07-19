@@ -225,6 +225,8 @@ def main():
     train = pd.read_csv(train_data)
     test = pd.read_csv(test_data)
     valid = pd.read_csv(valid_data)
+
+    print('CUDA AVIALABLE:', torch.cuda.is_available())
     
     # dataset_path = Dataset.get(
     #         dataset_project=PROJECT_NAME,
@@ -280,14 +282,14 @@ def main():
     
 
     # #Trains the model.
-    x_train, x_val, x_test = train['text'], valid['text'], test['text']
-    y_train, y_val, y_test = train['label'], valid['label'], test['label']
-    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, batch_size=parameters['batch_size'], model_str=model_name)
+    # x_train, x_val, x_test = train['text'], valid['text'], test['text']
+    # y_train, y_val, y_test = train['label'], valid['label'], test['label']
+    # model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, batch_size=parameters['batch_size'], model_str=model_name)
 
-    # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator='gpu', logger=True)
-    trainer.fit(model)
-    trainer.save_checkpoint(f"{model_name}.ckpt")
+    # # # model = train_model(dm, parameters)
+    # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator='gpu', logger=True)
+    # trainer.fit(model)
+    # trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # #Stores the trained model as an artifact (zip).:w
     # task.upload_artifact(str(model_path), 'model')
