@@ -134,7 +134,7 @@ def main():
     # #Trains the model.
     x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
     y_train, y_val, y_test = train_data['text'], valid_data['text'], test_data['label']
-    model = BertBase(model_str=parameters['pre_trained_model'])
+    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, model_str=parameters['pre_trained_model'])
 
     # model = train_model(dm, parameters)
     # trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
