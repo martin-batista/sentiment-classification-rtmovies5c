@@ -64,8 +64,8 @@ class BertBase(pl.LightningModule):
         self.pretrain_model  = AutoModel.from_pretrained(self.hparams.model_str)
         #self.pretrain_model  = DistilBertForSequenceClassification.from_pretrained(self.hparams.model_str)
 
-        #    for param in self.pretrain_model.parameters():
-        #       param.requires_grad = False
+        for param in self.pretrain_model.parameters():
+            param.requires_grad = False
 
         # The fine-tuning model head:
         layers = []
