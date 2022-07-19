@@ -1,5 +1,6 @@
 from clearml import Task, Dataset
 from pathlib import Path
+import torch
 import os
 import shutil
 import pytorch_lightning as pl
@@ -136,7 +137,8 @@ def main():
     x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
     y_train, y_val, y_test = train_data['label'], valid_data['label'], test_data['label']
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, batch_size=parameters['batch_size'], model_str=model_name)
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
     print('MODEL uploaded to', model.device)
 
     # model = train_model(dm, parameters)
