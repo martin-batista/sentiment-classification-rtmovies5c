@@ -41,7 +41,7 @@ class ClassificationTransformer(TextClassificationTransformer):
 class BertBase(pl.LightningModule):
     
     def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test,
-                 max_seq_len=64, batch_size=128, learning_rate = 2e-5, lr_schedule = False,
+                 max_seq_len=512, batch_size=32, learning_rate = 2e-5, lr_schedule = False,
                  model_str = 'bert-base-uncased', train_backbone = False, hidden_size = 768, head_depth = 1,
                  head_hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5,
                  num_train_steps = 12):
