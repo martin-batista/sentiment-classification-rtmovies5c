@@ -47,7 +47,7 @@ def main():
     Task.add_requirements('requirements.txt')
     task = Task.init(project_name=PROJECT_NAME, 
                     task_name='train_model',
-                    task_type='data_processing', #type: ignore 
+                    task_type='training', #type: ignore 
                     )
 
     parameters = {
@@ -64,7 +64,7 @@ def main():
     }
 
     task.connect(parameters)
-    # task.execute_remotely('GPU')
+    task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
