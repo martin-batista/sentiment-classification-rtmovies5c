@@ -47,7 +47,7 @@ task.connect(parameters)
 class BertBase(pl.LightningModule):
     
     def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test,
-                 max_seq_len=512, batch_size=32, learning_rate = 2e-5, lr_schedule = False,
+                 max_seq_len=512, batch_size=16, learning_rate = 2e-5, lr_schedule = False,
                  model_str = 'bert-base-uncased', train_backbone = False, hidden_size = 768, head_depth = 1,
                  head_hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5,
                  num_train_steps = 12):
@@ -71,8 +71,8 @@ class BertBase(pl.LightningModule):
         self.config = AutoConfig.from_pretrained(self.model_str)
         self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
 
-        for param in self.pretrain_model.parameters():
-            param.requires_grad = False
+        # for param in self.pretrain_model.parameters():
+        #     param.requires_grad = False
 
         # The fine-tuning model head:
         layers = []
