@@ -41,7 +41,7 @@ class ClassificationTransformer(TextClassificationTransformer):
 class BertBase(pl.LightningModule):
     
     def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test,
-                 max_seq_len=512, batch_size=32, learning_rate = 2e-5, lr_schedule = False,
+                 max_seq_len=64, batch_size=128, learning_rate = 2e-5, lr_schedule = False,
                  model_str = 'bert-base-uncased', train_backbone = False, hidden_size = 768, head_depth = 1,
                  head_hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5,
                  num_train_steps = 12):
@@ -52,6 +52,7 @@ class BertBase(pl.LightningModule):
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
         self.confusion_matrix = ConfusionMatrix(num_classes)
+        self.model_str = model_str
         self.save_hyperparameters()
 
         self.x_train = x_train
@@ -61,8 +62,8 @@ class BertBase(pl.LightningModule):
         self.x_val = x_val
         self.y_val = y_val
 
-        self.pretrain_model  = AutoModel.from_pretrained(self.hparams.model_str)
-        #self.pretrain_model  = DistilBertForSequenceClassification.from_pretrained(self.hparams.model_str)
+        self.config = AutoConfig.from_pretrained(self.model_str)
+        self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
 
         for param in self.pretrain_model.parameters():
             param.requires_grad = False
@@ -79,26 +80,29 @@ class BertBase(pl.LightningModule):
 
       tokens_train = tokenizer.batch_encode_plus(
           self.x_train.tolist(),
+          padding='max_length',
           max_length = self.max_seq_len,
-          padding=True,
           truncation=True,
-          return_token_type_ids=False
+          return_token_type_ids=False,
+          return_attention_mask=True,
       )
 
       tokens_val = tokenizer.batch_encode_plus(
           self.x_val.tolist(),
+          padding='max_length',
           max_length = self.max_seq_len,
-          padding=True,
           truncation=True,
-          return_token_type_ids=False
+          return_token_type_ids=False,
+          return_attention_mask=True
       )
 
       tokens_test = tokenizer.batch_encode_plus(
           self.x_test.tolist(),
+          padding='max_length',
           max_length = self.max_seq_len,
-          padding=True,
           truncation=True,
-          return_token_type_ids=False
+          return_token_type_ids=False,
+          return_attention_mask=True
       )
 
       self.train_seq = torch.tensor(tokens_train['input_ids'])
