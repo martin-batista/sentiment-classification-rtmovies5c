@@ -78,7 +78,7 @@ def main():
     #         dataset_name='data_split'
     # ).get_local_copy()
 
-    print(train_data.head())
+    print(train_data[:20])
 
 
     # train_path = list(Path(dataset_path).glob('train.json'))[0]
