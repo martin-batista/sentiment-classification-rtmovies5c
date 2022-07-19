@@ -138,7 +138,7 @@ def main():
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, batch_size=parameters['batch_size'], model_str=model_name)
 
     # model = train_model(dm, parameters)
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator='gpu', logger=True)
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator='auto', logger=True)
     trainer.fit(model)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
