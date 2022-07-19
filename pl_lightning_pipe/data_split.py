@@ -72,7 +72,7 @@ def main():
 
     Task.add_requirements('requirements.txt')
     task = Task.init(project_name=PROJECT_NAME, 
-                       task_name='train_val_test_split',
+                       task_name='data_split',
                        task_type='data_processing', #type: ignore 
                       )
     parameters = {
