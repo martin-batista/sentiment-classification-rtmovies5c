@@ -92,6 +92,8 @@ def main():
     shutil.move(test_path, local_interim_data_path / 'test.json')
 
     print(os.listdir(os.getcwd()))
+    print(os.listdir(local_data_path))
+    print(os.listdir(local_interim_data_path))
 
     # #Constructs the data paths to store the train, validation and test data.
     # data_path = Path(__file__).parents[1] / 'data' 
