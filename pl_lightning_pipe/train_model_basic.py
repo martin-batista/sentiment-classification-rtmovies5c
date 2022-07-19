@@ -5,7 +5,7 @@ import shutil
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from transformers import AutoTokenizer # type: ignore
-from pl_transformer import ClassificationTransformer, BertBase 
+from pl_transformer import ClassificationTransformer 
 from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
@@ -64,7 +64,7 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('default')
+    task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
@@ -74,9 +74,14 @@ def main():
     Path('data/interim').mkdir(parents=True, exist_ok=True)
 
     train_data = preprocess_task.artifacts['train_data'].get()
+    train_data.to_json('data/interim/train_data.json', orient='records', lines=True)
     test_data = preprocess_task.artifacts['test_data'].get()
-    valid_data = preprocess_task.artifacts['validation_data'].get()
-
+    test_data.to_json('data/interim/test_data.json', orient='records', lines=True)
+    if parameters['validation_split'] > 0:
+        valid_data = preprocess_task.artifacts['validation_data'].get()
+        valid_data.to_json('data/interim/valid_data.json', orient='records', lines=True)
+    else:
+        valid_data = None
     
     # dataset_path = Dataset.get(
     #         dataset_project=PROJECT_NAME,
@@ -114,12 +119,12 @@ def main():
     # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     # # # Constructs the data module.
-    # data_path = Path('data/interim')
-    # dm = build_data_module(train_path=str(data_path / 'train_data.json'), 
-    #                        valid_path=str(data_path / 'valid_data.json'),
-    #                        test_path=str(data_path / 'test_data.json'),
-    #                        parameters=parameters)
-    # print(dm.num_classes)
+    data_path = Path('data/interim')
+    dm = build_data_module(train_path=str(data_path / 'train_data.json'), 
+                           valid_path=str(data_path / 'valid_data.json'),
+                           test_path=str(data_path / 'test_data.json'),
+                           parameters=parameters)
+    print(dm.num_classes)
 
     # # #Defines training callbacks.
     # model_name = parameters['pre_trained_model']
@@ -132,10 +137,6 @@ def main():
     
 
     # #Trains the model.
-    x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
-    y_train, y_val, y_test = train_data['text'], valid_data['text'], test_data['label']
-    model = BertBase(model_str=parameters['pre_trained_model'])
-
     # model = train_model(dm, parameters)
     # trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
     # trainer.fit(model, dm)
