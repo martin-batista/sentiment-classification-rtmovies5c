@@ -65,7 +65,7 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('default')
+    task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',

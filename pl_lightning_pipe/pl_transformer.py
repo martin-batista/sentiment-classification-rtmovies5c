@@ -177,14 +177,15 @@ class BertBase(pl.LightningModule):
       return total_test_accuracy
 
     def configure_optimizers(self):
-      optimizer = torch.optim.AdamW(self.parameters())
-      if self.hparams.lr_schedule:
-        return {
-        "optimizer": optimizer,
-         "lr_scheduler": {
-             "scheduler": transformers.get_linear_schedule_with_warmup(optimizer, self.hparams.warmup_steps, self.hparams.num_train_steps),
-              "monitor": "train_loss"
-          },
-      }
-      else:
-        return optimizer
+      return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+    #   if self.hparams.lr_schedule:
+    #     return {
+    #     "optimizer": optimizer,
+    #      "lr_scheduler": {
+    #          "scheduler": transformers.get_linear_schedule_with_warmup(optimizer, self.hparams.warmup_steps, self.hparams.num_train_steps),
+    #           "monitor": "train_loss"
+    #       },
+    #   }
+    #   else:
+      # return optimizer
+    
