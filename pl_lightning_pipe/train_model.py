@@ -138,11 +138,11 @@ def main():
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, model_str=model_name)
 
     # model = train_model(dm, parameters)
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], logger=True)
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], batch_size=parameters['batch_size'], logger=True)
     trainer.fit(model)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
-    # #Stores the trained model as an artifact (zip).
+    # #Stores the trained model as an artifact (zip).:w
     # task.upload_artifact(str(model_path), 'model')
 
 
