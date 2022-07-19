@@ -105,7 +105,6 @@ def main():
 
     # # Constructs the data module.
     dm = build_data_module(parameters=parameters)
-    print(dm.num_classes)
 
     # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
