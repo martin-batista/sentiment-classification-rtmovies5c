@@ -122,7 +122,7 @@ def main():
     # print(dm.num_classes)
 
     # # #Defines training callbacks.
-    # model_name = parameters['pre_trained_model']
+    model_name = parameters['pre_trained_model']
     # model_path = local_data_path / 'models' / f'{model_name}'
     # model_path.mkdir(parents=True, exist_ok=True)
 
@@ -134,12 +134,12 @@ def main():
     # #Trains the model.
     x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
     y_train, y_val, y_test = train_data['text'], valid_data['text'], test_data['label']
-    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, model_str=parameters['pre_trained_model'])
+    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, model_str=model_name])
 
     # model = train_model(dm, parameters)
-    # trainer = pl.Trainer(accelerator="auto", devices="auto", max_epochs=parameters['num_epochs'], logger=True, enable_progress_bar=False, callbacks=[checkpoint_callback])
-    # trainer.fit(model, dm)
-    # trainer.save_checkpoint(f"{model_name}.ckpt")
+    trainer = pl.Trainer( max_epochs=parameters['num_epochs'], logger=True)
+    trainer.fit(model)
+    trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # #Stores the trained model as an artifact (zip).
     # task.upload_artifact(str(model_path), 'model')
