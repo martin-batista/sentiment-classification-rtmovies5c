@@ -18,10 +18,11 @@ import logging
 
 def build_data_module(train_path, test_path, valid_path, parameters):
     tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
+    valid = parameters['validation_split'] > 0
     return TextClassificationDataModule(batch_size=parameters['batch_size'],
                                         max_length=parameters['max_length'], 
-                                        train_file= train_path,
-                                        validation_file= valid_path,
+                                        train_file=train_path,
+                                        validation_file= valid_path if valid else None,
                                         test_file=test_path,
                                         tokenizer=tokenizer)
 
@@ -63,22 +64,25 @@ def main():
     }
 
     task.connect(parameters)
-    # task.execute_remotely('default')
+    task.execute_remotely('default')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
 
-    train_data = preprocess_task.artifacts['train_data.json'].get_local_copy()
-    test_data = preprocess_task.artifacts['test_data.json'].get_local_copy()
+
+    Path('data/interim').mkdir(parents=True, exist_ok=True)
+
+    train_data = preprocess_task.artifacts['train_data'].get()
+    train_data.to_json('data/interim/train_data.json', orient='records', lines=True)
+    test_data = preprocess_task.artifacts['test_data'].get()
+    test_data.to_json('data/interim/test_data.json', orient='records', lines=True)
     if parameters['validation_split'] > 0:
-        valid_data = preprocess_task.artifacts['validation_data.json'].get_local_copy()
+        valid_data = preprocess_task.artifacts['validation_data'].get()
+        valid_data.to_json('data/interim/valid_data.json', orient='records', lines=True)
     else:
         valid_data = None
     
-    print(train_data)
-    print(test_data)
-
     # dataset_path = Dataset.get(
     #         dataset_project=PROJECT_NAME,
     #         dataset_name='data_split'
@@ -115,11 +119,12 @@ def main():
     # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     # # # Constructs the data module.
-    # dm = build_data_module(train_path=train_data, 
-    #                        valid_path=valid_data,
-    #                        test_path=test_data,
-    #                        parameters=parameters)
-    # print(dm.num_classes)
+    data_path = Path('data/interim')
+    dm = build_data_module(train_path=str(data_path / 'train_data.json'), 
+                           valid_path=str(data_path / 'valid_data.json'),
+                           test_path=str(data_path / 'test_data.json'),
+                           parameters=parameters)
+    print(dm.num_classes)
 
     # # #Defines training callbacks.
     # model_name = parameters['pre_trained_model']
