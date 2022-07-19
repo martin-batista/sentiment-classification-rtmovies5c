@@ -7,6 +7,19 @@ import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
 from pipe_conf import PROJECT_NAME, SOURCE_DATASET
 
+Task.add_requirements('requirements.txt')
+task = Task.init(project_name=PROJECT_NAME, 
+                    task_name='data_split',
+                    task_type='data_processing', #type: ignore 
+                    )
+parameters = {
+    'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
+    'validation_split': 0.1,
+    'seed': 42,
+}
+
+task.connect(parameters)
+task.execute_remotely('GPU')
 
 def get_train_test_data(task_id):
     dataset_task = Task.get_task(task_id)
@@ -61,28 +74,6 @@ def log_histogram(task, df_1, df_2, df_3, title, name_1, name_2, name_3):
 
 
 def main():
-    # task = Task.create(project_name=PROJECT_NAME, 
-    #                    task_name='LitTransformers_pipe_1_data_split',
-    #                    task_type='data_processing', #type: ignore 
-    #                    repo='https://github.com/martin-batista/sentiment-classification-rtmovies5c.git',
-    #                    script='pl_lightning_pipe/step1_train_val_split.py',
-    #                    add_task_init_call=True,
-    #                    requirements_file = 'requirements.txt',
-    #                   )
-
-    Task.add_requirements('requirements.txt')
-    task = Task.init(project_name=PROJECT_NAME, 
-                       task_name='data_split',
-                       task_type='data_processing', #type: ignore 
-                      )
-    parameters = {
-        'dataset_id': '8fe0f01e7c9540ac8b94ddbc84ac7ecb',
-        'validation_split': 0.1,
-        'seed': 42,
-    }
-
-    task.connect(parameters)
-    task.execute_remotely('GPU')
 
     pl.seed_everything(parameters['seed'])
     train, test_data = get_train_test_data(parameters['dataset_id'])
@@ -123,24 +114,6 @@ def main():
     task.upload_artifact(name='train_data', artifact_object=train_save, wait_on_upload=True)
     task.upload_artifact(name='validation_data', artifact_object=valid_save, wait_on_upload=True)
     task.upload_artifact(name='test_data', artifact_object=test_save, wait_on_upload=True)
-
-    #Constructs the data paths to store the train, validation and test data.
-    # data_path = Path(__file__).parents[1] / 'data' 
-    # interim_path = data_path / 'interim'
-    # interim_path.mkdir(parents=True, exist_ok=True)
-    # logging.warning(f'Saving data to {interim_path}')
-
-    #Stores the data locally for training.
-    # train_save.to_json(interim_path / 'train.json', orient='records', lines=True)
-    # valid_save.to_json(interim_path / 'valid.json', orient='records', lines=True)
-    # test_save.to_json(interim_path / 'test.json', orient='records', lines=True)
-
-    # split_dataset = Dataset.create(dataset_name='data_split', 
-    #                                dataset_project=PROJECT_NAME)
-
-    # split_dataset.add_files(interim_path, wildcard='*.json')
-    # split_dataset.upload()
-    # split_dataset.finalize()
 
 if __name__ == '__main__':
     main()
