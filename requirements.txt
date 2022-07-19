@@ -3,8 +3,7 @@
 PyYAML==5.4.1
 boto3 == 1.24.31
 clearml == 1.6.2
-lightning_transformers == 0.2.1
-pytorch_lightning == 1.6.5
+
 boto3==1.24.19
 botocore==1.27.19
 cachetools==5.2.0
@@ -19,6 +18,7 @@ greenlet==1.1.2
 joblib==1.1.0
 oauthlib==3.2.0
 pandas==1.4.3
+numpy
 python-apt==2.0.0+ubuntu0.20.4.7
 python-dateutil==2.8.2
 python-distutils-extra==2.39
@@ -40,7 +40,9 @@ tokenizers==0.12.1
 torch==1.12.0+cu116
 torchaudio==0.12.0+cu116
 torchvision==0.13.0+cu116
-tornado==6.1
-tqdm==4.64.0
 transformers==4.20.1
 virtualenv==20.15.1
+tqdm==4.64.0
+tornado==6.1
+lightning_transformers == 0.2.1
+pytorch_lightning == 1.6.5
