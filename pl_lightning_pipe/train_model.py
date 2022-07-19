@@ -12,7 +12,7 @@ from lightning_transformers.task.nlp.text_classification import (
 )
 from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
-import logging
+from torchsummary import summary
 # from torch.utils.tensorboard import SummaryWriter
 
 # Task.add_requirements('requirements.txt')
@@ -136,6 +136,8 @@ def main():
     x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
     y_train, y_val, y_test = train_data['label'], valid_data['label'], test_data['label']
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, batch_size=parameters['batch_size'], model_str=model_name)
+
+    print('MODEL uploaded to', model.device)
 
     # model = train_model(dm, parameters)
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator='auto', logger=True)
