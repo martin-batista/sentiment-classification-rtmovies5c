@@ -27,6 +27,22 @@ task = Task.init(project_name=PROJECT_NAME,
                 task_type='training', #type: ignore 
                 )
 
+task.execute_remotely('GPU')
+parameters = {
+        'validation_split': 0.1,
+        'seed': 42,
+        'pre_trained_model': 'bert-base-uncased',
+        'batch_size': 16,
+        'max_length': 512,
+        'lr': 2e-5,
+        'freeze_backbone': True,
+        'num_epochs': 3,
+        'accelerator': 'auto',
+        'devices': 'auto',
+    }
+
+task.connect(parameters)
+
 
 class BertBase(pl.LightningModule):
     
@@ -184,21 +200,7 @@ def main():
     #                 requirements_file = 'requirements.txt',
     #                 )
 
-    parameters = {
-        'validation_split': 0.1,
-        'seed': 42,
-        'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 16,
-        'max_length': 512,
-        'lr': 2e-5,
-        'freeze_backbone': True,
-        'num_epochs': 3,
-        'accelerator': 'auto',
-        'devices': 'auto',
-    }
 
-    task.connect(parameters)
-    task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
