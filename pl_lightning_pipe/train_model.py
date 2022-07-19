@@ -70,30 +70,32 @@ def main():
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
 
-    # train_data = preprocess_task.artifacts['train_data'].get()
-    # valid_data = preprocess_task.artifacts['validation_data'].get()
-    # test_data = preprocess_task.artifacts['test_data'].get()
-    dataset_path = Dataset.get(
-            dataset_project=PROJECT_NAME,
-            dataset_name='data_split'
-    ).get_local_copy()
+    train_data = preprocess_task.artifacts['train_data'].get()
+    valid_data = preprocess_task.artifacts['validation_data'].get()
+    test_data = preprocess_task.artifacts['test_data'].get()
+    # dataset_path = Dataset.get(
+    #         dataset_project=PROJECT_NAME,
+    #         dataset_name='data_split'
+    # ).get_local_copy()
+
+    print(train_data.head())
 
 
-    train_path = list(Path(dataset_path).glob('train.json'))[0]
-    valid_path = list(Path(dataset_path).glob('valid.json'))[0]
-    test_path = list(Path(dataset_path).glob('test.json'))[0]
+    # train_path = list(Path(dataset_path).glob('train.json'))[0]
+    # valid_path = list(Path(dataset_path).glob('valid.json'))[0]
+    # test_path = list(Path(dataset_path).glob('test.json'))[0]
 
-    local_data_path = Path(os.getcwd()) / 'data' 
-    local_interim_data_path = local_data_path / 'interim'
-    local_interim_data_path.mkdir(parents=True, exist_ok=True)
+    # local_data_path = Path(os.getcwd()) / 'data' 
+    # local_interim_data_path = local_data_path / 'interim'
+    # local_interim_data_path.mkdir(parents=True, exist_ok=True)
 
-    shutil.move(train_path, local_interim_data_path / 'train.json')
-    shutil.move(valid_path, local_interim_data_path / 'valid.json')
-    shutil.move(test_path, local_interim_data_path / 'test.json')
+    # shutil.move(train_path, local_interim_data_path / 'train.json')
+    # shutil.move(valid_path, local_interim_data_path / 'valid.json')
+    # shutil.move(test_path, local_interim_data_path / 'test.json')
 
-    print(os.listdir(os.getcwd()))
-    print(os.listdir(local_data_path))
-    print(os.listdir(local_interim_data_path))
+    # print(os.listdir(os.getcwd()))
+    # print(os.listdir(local_data_path))
+    # print(os.listdir(local_interim_data_path))
 
     # #Constructs the data paths to store the train, validation and test data.
     # data_path = Path(__file__).parents[1] / 'data' 
@@ -107,8 +109,8 @@ def main():
     # test_data.to_json(interim_path / 'test.json', orient='records', lines=True)
 
     # # # Constructs the data module.
-    dm = build_data_module(path = local_interim_data_path, parameters=parameters)
-    print(dm.num_classes)
+    # dm = build_data_module(path = local_interim_data_path, parameters=parameters)
+    # print(dm.num_classes)
 
     # # #Defines training callbacks.
     # model_name = parameters['pre_trained_model']
