@@ -22,17 +22,6 @@ from transformers import AutoModel, AutoConfig, AutoTokenizer
 
 # Task.add_requirements('requirements.txt')
 
-def build_data_module(train_path, test_path, valid_path, parameters):
-    tokenizer = AutoTokenizer.from_pretrained(parameters['pre_trained_model'])
-    valid = parameters['validation_split'] > 0
-    return TextClassificationDataModule(batch_size=parameters['batch_size'],
-                                        max_length=parameters['max_length'], 
-                                        train_file=train_path,
-                                        validation_file= valid_path if valid else None,
-                                        test_file=test_path,
-                                        tokenizer=tokenizer)
-
-
 class BertBase(pl.LightningModule):
     
     def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test,

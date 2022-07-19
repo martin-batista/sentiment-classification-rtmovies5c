@@ -4,8 +4,6 @@ PyYAML
 boto3 
 clearml 
 tensorboard
-tensorboardX
-pytorch-lightning
 torch
 torchvision
 pandas
