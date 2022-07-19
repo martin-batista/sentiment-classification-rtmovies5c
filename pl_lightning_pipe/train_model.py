@@ -15,9 +15,9 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
-from torchmetrics import Accuracy, ConfusionMatrix
+from torchmetrics import Accuracy, ConfusionMatrix # type: ignore
 import pytorch_lightning as pl
-from transformers import AutoModel, AutoConfig, AutoTokenizer
+from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 
 # from torch.utils.tensorboard import SummaryWriter
 
@@ -70,13 +70,13 @@ class BertBase(pl.LightningModule):
 
         # The fine-tuning model head:
         layers = []
-        layers.append(nn.Linear(self.hparams.hidden_size, self.hparams.num_classes))
-        layers.append(nn.Dropout(self.hparams.head_dropout))
+        layers.append(nn.Linear(self.hparams.hidden_size, self.hparams.num_classes)) # type: ignore
+        layers.append(nn.Dropout(self.hparams.head_dropout)) # type: ignore
         layers.append(nn.LogSoftmax(dim=1))
         self.new_layers = nn.Sequential(*layers)
 
     def prepare_data(self):
-      tokenizer = AutoTokenizer.from_pretrained(self.hparams.model_str)
+      tokenizer = AutoTokenizer.from_pretrained(self.hparams.model_str) # type: ignore
 
       tokens_train = tokenizer.batch_encode_plus(
           self.x_train.tolist(),
@@ -169,7 +169,7 @@ class BertBase(pl.LightningModule):
     def test_epoch_end(self, outputs):
       test_outs = []
       for test_out in outputs:
-          out = test_out['test_accuracy']
+          out = test_out['test_accuracy'] # type: ignore
           test_outs.append(out)
       
       total_test_accuracy = torch.stack(test_outs).mean()
