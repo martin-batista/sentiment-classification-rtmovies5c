@@ -83,12 +83,13 @@ def main():
     valid_path = list(Path(dataset_path).glob('valid.json'))[0]
     test_path = list(Path(dataset_path).glob('test.json'))[0]
 
-    local_data_path =  Path(os.getcwd()) / 'data' / 'interim'
-    local_data_path.mkdir(parents=True, exist_ok=True)
+    local_data_path = Path(os.getcwd()) / 'data' 
+    local_interim_data_path = local_data_path / 'interim'
+    local_interim_data_path.mkdir(parents=True, exist_ok=True)
 
-    shutil.move(train_path, local_data_path / 'train.json')
-    shutil.move(valid_path, local_data_path / 'valid.json')
-    shutil.move(test_path, local_data_path / 'test.json')
+    shutil.move(train_path, local_interim_data_path / 'train.json')
+    shutil.move(valid_path, local_interim_data_path / 'valid.json')
+    shutil.move(test_path, local_interim_data_path / 'test.json')
 
 
     # #Constructs the data paths to store the train, validation and test data.
@@ -108,7 +109,7 @@ def main():
 
     # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
-    model_path = data_path / 'models' / f'{model_name}'
+    model_path = local_data_path / 'models' / f'{model_name}'
     model_path.mkdir(parents=True, exist_ok=True)
 
     checkpoint_callback = ModelCheckpoint(
