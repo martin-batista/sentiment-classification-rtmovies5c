@@ -7,8 +7,6 @@ import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
 from pipe_conf import PROJECT_NAME, SOURCE_DATASET
 
-# Task.add_requirements('requirements.txt')
-
 
 def get_train_test_data(task_id):
     dataset_task = Task.get_task(task_id)
@@ -74,7 +72,7 @@ def main():
 
     Task.add_requirements('requirements.txt')
     task = Task.init(project_name=PROJECT_NAME, 
-                       task_name='LitTransformers_pipe_1_data_split',
+                       task_name='train_val_test_split',
                        task_type='data_processing', #type: ignore 
                       )
     parameters = {
@@ -84,7 +82,7 @@ def main():
     }
 
     task.connect(parameters)
-    # task.execute_remotely('GPU')
+    task.execute_remotely('default')
 
     pl.seed_everything(parameters['seed'])
     train, test_data = get_train_test_data(parameters['dataset_id'])
@@ -121,6 +119,7 @@ def main():
     valid_save = validation_data[['label', 'text']].copy()
     test_save = test_data[['label', 'text']].copy()
 
+    #Stores data as artifacts.:w:w
     # task.upload_artifact(name='train_data', artifact_object=train_save, wait_on_upload=True)
     # task.upload_artifact(name='validation_data', artifact_object=valid_save, wait_on_upload=True)
     # task.upload_artifact(name='test_data', artifact_object=test_save, wait_on_upload=True)

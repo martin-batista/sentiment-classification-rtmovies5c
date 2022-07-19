@@ -64,10 +64,10 @@ def main():
     }
 
     task.connect(parameters)
-    task.execute_remotely('GPU')
+    # task.execute_remotely('GPU')
 
     #Grabs the preprocessed data from the previous step:
-    preprocess_task = Task.get_task(task_name='LitTransformers_pipe_1_data_split',
+    preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
 
     # train_data = preprocess_task.artifacts['train_data'].get()
