@@ -185,13 +185,13 @@ if __name__ == '__main__':
 
     Path('data/interim').mkdir(parents=True, exist_ok=True)
 
-    train_data = preprocess_task.artifacts['train_data'].get()
-    test_data = preprocess_task.artifacts['test_data'].get()
-    valid_data = preprocess_task.artifacts['validation_data'].get()
+    train_path = preprocess_task.artifacts['train_data'].get_local_copy()
+    test_path = preprocess_task.artifacts['test_data'].get_local_copy()
+    valid_path = preprocess_task.artifacts['validation_data'].get_local_copy()
 
-    # train = pd.read_csv(train_data)
-    # test = pd.read_csv(test_data)
-    # valid = pd.read_csv(valid_data)
+    train_data = pd.read_csv(train_path)
+    test_data = pd.read_csv(test_path)
+    valid_data = pd.read_csv(valid_path)
 
     local_data_path = Path(os.getcwd()) / 'data' 
     
