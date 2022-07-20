@@ -6,6 +6,5 @@ clearml
 torch 
 torchaudio 
 torchvision 
-pandas
 transformers
 torchmetrics
