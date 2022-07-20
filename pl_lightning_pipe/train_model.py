@@ -36,7 +36,7 @@ parameters = {
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 16,
-        'max_length': 512,
+        'max_length': 512 ,
         'lr': 2e-5,
         'num_epochs': 3,
         'accelerator': 'auto',
@@ -216,13 +216,16 @@ def main():
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, parameters)
 
     # # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-                         devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(profiler='simple')
     trainer.fit(model)
-    trainer.save_checkpoint(f"{model_name}.ckpt")
+    # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+    #                      devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
+    
+    # trainer.fit(model)
+    # trainer.save_checkpoint(f"{model_name}.ckpt")
 
-    # #Stores the trained model as an artifact (zip).:w
-    task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+    # # #Stores the trained model as an artifact (zip).:w
+    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
 
 
 if __name__ == '__main__':
