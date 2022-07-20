@@ -217,7 +217,7 @@ def main():
     model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, parameters)
 
     # # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(profiler='simple')
+    trainer = pl.Trainer(profiler='simple', accelerator='auto')
     trainer.fit(model)
     # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
     #                      devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
