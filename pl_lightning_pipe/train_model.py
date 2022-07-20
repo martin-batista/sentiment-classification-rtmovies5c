@@ -211,15 +211,15 @@ if __name__ == '__main__':
     model = BertBase(params=parameters)
 
     # # # model = train_model(dm, parameters)
-    # trainer = pl.Trainer(profiler='simple', accelerator='auto')
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-                         devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(profiler=True, max_epochs=1, accelerator='auto')
+    # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+    #                      devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
     
     trainer.fit(model)
-    trainer.save_checkpoint(f"{model_name}.ckpt")
+    # trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # # #Stores the trained model as an artifact (zip).:w
-    task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
 
 
 
