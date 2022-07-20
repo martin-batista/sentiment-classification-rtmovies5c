@@ -36,7 +36,7 @@ parameters = {
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 16,
-        'max_length': 128 ,
+        'max_length': 512 ,
         'lr': 2e-5,
         'num_epochs': 3,
         'accelerator': 'auto',
@@ -208,19 +208,18 @@ def main():
     # #Trains the model.
     x_train, x_val, x_test = train['text'], valid['text'], test['text']
     y_train, y_val, y_test = train['label'], valid['label'], test['label']
-    model = BertBase(x_train, y_train, x_val, y_val, x_test, y_test, parameters)
+    model = BertBase(params=parameters)
 
     # # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(profiler='simple', accelerator='auto')
-    trainer.fit(model)
-    # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-    #                      devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
+    # trainer = pl.Trainer(profiler='simple', accelerator='auto')
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+                         devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
     
-    # trainer.fit(model)
-    # trainer.save_checkpoint(f"{model_name}.ckpt")
+    trainer.fit(model)
+    trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # # #Stores the trained model as an artifact (zip).:w
-    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+    task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
 
 
 if __name__ == '__main__':
