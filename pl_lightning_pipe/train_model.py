@@ -211,7 +211,7 @@ if __name__ == '__main__':
     model = BertBase(params=parameters)
 
     # # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(profiler=True, max_epochs=1, accelerator='auto')
+    trainer = pl.Trainer(profiler='simple', max_epochs=1, accelerator='auto')
     # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
     #                      devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
     
