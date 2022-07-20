@@ -30,13 +30,13 @@ task = Task.init(project_name=PROJECT_NAME,
                 task_type='training', #type: ignore 
                 )
 
-task.execute_remotely('GPU')
+# task.execute_remotely('GPU')
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 16,
-        'max_length': 512 ,
+        'batch_size': 2,
+        'max_length': 8,
         'lr': 2e-5,
         'num_epochs': 3,
         'accelerator': 'auto',
@@ -177,7 +177,7 @@ class BertBase(pl.LightningModule):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
 
 
-def main():
+if __name__ == '__main__':
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
@@ -185,13 +185,13 @@ def main():
 
     Path('data/interim').mkdir(parents=True, exist_ok=True)
 
-    train_data = preprocess_task.artifacts['train_data'].get_local_copy()
-    test_data = preprocess_task.artifacts['test_data'].get_local_copy()
-    valid_data = preprocess_task.artifacts['validation_data'].get_local_copy()
+    train_data = preprocess_task.artifacts['train_data'].get()
+    test_data = preprocess_task.artifacts['test_data'].get()
+    valid_data = preprocess_task.artifacts['validation_data'].get()
 
-    train = pd.read_csv(train_data)
-    test = pd.read_csv(test_data)
-    valid = pd.read_csv(valid_data)
+    # train = pd.read_csv(train_data)
+    # test = pd.read_csv(test_data)
+    # valid = pd.read_csv(valid_data)
 
     local_data_path = Path(os.getcwd()) / 'data' 
     
@@ -206,8 +206,8 @@ def main():
         )
     
     # #Trains the model.
-    x_train, x_val, x_test = train['text'], valid['text'], test['text']
-    y_train, y_val, y_test = train['label'], valid['label'], test['label']
+    x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
+    y_train, y_val, y_test = train_data['label'], valid_data['label'], test_data['label']
     model = BertBase(params=parameters)
 
     # # # model = train_model(dm, parameters)
