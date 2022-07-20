@@ -36,7 +36,7 @@ parameters = {
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 16,
-        'max_length': 512 ,
+        'max_length': 128 ,
         'lr': 2e-5,
         'num_epochs': 3,
         'accelerator': 'auto',
@@ -77,7 +77,7 @@ class BertBase(pl.LightningModule):
         self.new_layers = nn.Sequential(*layers)
 
     def prepare_data(self):
-      tokenizer = AutoTokenizer.from_pretrained(self.model_str) # type: ignore
+      tokenizer = AutoTokenizer.from_pretrained(self.model_str, trust_remote_code=True) # type: ignore
 
       tokens_train = tokenizer.batch_encode_plus(
           self.x_train.tolist(),
