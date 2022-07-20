@@ -1,6 +1,7 @@
 # Python 3.9.10 (main, Jan 15 2022, 11:40:36)  [Clang 13.0.0 (clang-1300.0.29.3)]
 
 PyYAML
+numpy==1.21.6
 boto3 
 clearml 
 torch 
