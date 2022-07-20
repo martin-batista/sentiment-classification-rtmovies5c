@@ -7,6 +7,5 @@ torch
 torchaudio 
 torchvision 
 pandas
-numpy
 transformers
 torchmetrics
