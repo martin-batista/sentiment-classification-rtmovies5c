@@ -35,8 +35,8 @@ parameters = {
         'validation_split': 0.1,
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 2,
-        'max_length': 8,
+        'batch_size': 32,
+        'max_length': 512,
         'lr': 2e-5,
         'num_epochs': 3,
         'accelerator': 'auto',
@@ -222,8 +222,6 @@ if __name__ == '__main__':
     task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
 
 
-if __name__ == '__main__':
-    main()
 
 
 
