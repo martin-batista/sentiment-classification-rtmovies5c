@@ -75,7 +75,7 @@ class BertBase(pl.LightningModule):
         self.new_layers = nn.Sequential(*layers)
 
     def prepare_data(self):
-      tokenizer = AutoTokenizer.from_pretrained(self.hparams.model_str) # type: ignore
+      tokenizer = AutoTokenizer.from_pretrained(self.model_str) # type: ignore
 
       tokens_train = tokenizer.batch_encode_plus(
           self.x_train.tolist(),
