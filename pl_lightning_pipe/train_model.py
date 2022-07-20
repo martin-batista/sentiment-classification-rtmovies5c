@@ -30,7 +30,7 @@ task = Task.init(project_name=PROJECT_NAME,
                 task_type='training', #type: ignore 
                 )
 
-# task.execute_remotely('GPU')
+task.execute_remotely('GPU')
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
