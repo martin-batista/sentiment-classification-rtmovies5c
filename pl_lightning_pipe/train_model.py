@@ -60,13 +60,6 @@ class BertBase(pl.LightningModule):
         self.model_str = params['pre_trained_model']
         self.save_hyperparameters()
 
-        self.x_train = x_train
-        self.y_train = y_train
-        self.x_test = x_test
-        self.y_test = y_test
-        self.x_val = x_val
-        self.y_val = y_val
-
         self.config = AutoConfig.from_pretrained(self.model_str)
         self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
 
@@ -81,7 +74,7 @@ class BertBase(pl.LightningModule):
       tokenizer = AutoTokenizer.from_pretrained(self.model_str, trust_remote_code=True) # type: ignore
 
       tokens_train = tokenizer.batch_encode_plus(
-          self.x_train.tolist(),
+          x_train.tolist(),
           padding='max_length',
           max_length = self.max_seq_len,
           truncation=True,
@@ -90,7 +83,7 @@ class BertBase(pl.LightningModule):
       )
 
       tokens_val = tokenizer.batch_encode_plus(
-          self.x_val.tolist(),
+          x_val.tolist(),
           padding='max_length',
           max_length = self.max_seq_len,
           truncation=True,
@@ -99,7 +92,7 @@ class BertBase(pl.LightningModule):
       )
 
       tokens_test = tokenizer.batch_encode_plus(
-          self.x_test.tolist(),
+          x_test.tolist(),
           padding='max_length',
           max_length = self.max_seq_len,
           truncation=True,
@@ -109,15 +102,15 @@ class BertBase(pl.LightningModule):
 
       self.train_seq = torch.tensor(tokens_train['input_ids'])
       self.train_mask = torch.tensor(tokens_train['attention_mask'])
-      self.train_y = torch.tensor(self.y_train.tolist())
+      self.train_y = torch.tensor(y_train.tolist())
 
       self.val_seq = torch.tensor(tokens_val['input_ids'])
       self.val_mask = torch.tensor(tokens_val['attention_mask'])
-      self.val_y = torch.tensor(self.y_val.tolist())
+      self.val_y = torch.tensor(y_val.tolist())
 
       self.test_seq = torch.tensor(tokens_test['input_ids'])
       self.test_mask = torch.tensor(tokens_test['attention_mask'])
-      self.test_y = torch.tensor(self.y_test.tolist())
+      self.test_y = torch.tensor(y_test.tolist())
 
     def forward(self, encode_id, mask): 
         outputs = self.pretrain_model(encode_id, attention_mask=mask)
