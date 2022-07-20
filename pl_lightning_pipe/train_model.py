@@ -36,7 +36,7 @@ parameters = {
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 32,
-        'max_length': 512,
+        'max_length': 128,
         'lr': 2e-5,
         'num_epochs': 3,
         'accelerator': 'auto',
