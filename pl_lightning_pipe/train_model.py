@@ -200,10 +200,10 @@ if __name__ == '__main__':
     model_path = local_data_path / 'models' / f'{model_name}'
     # model_path.mkdir(parents=True, exist_ok=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val_loss',
-        dirpath=str(model_path)
-        )
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_loss',
+    #     dirpath=str(model_path)
+    #     )
     
     # #Trains the model.
     x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
@@ -211,12 +211,11 @@ if __name__ == '__main__':
     model = BertBase(params=parameters)
 
     # # # model = train_model(dm, parameters)
-    trainer = pl.Trainer(profiler='simple', max_epochs=1, accelerator='auto')
-    # trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-    #                      devices=parameters['devices'], logger=True, callbacks=[checkpoint_callback])
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+                         devices=parameters['devices'], logger=True)
     
     trainer.fit(model)
-    # trainer.save_checkpoint(f"{model_name}.ckpt")
+    trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # # #Stores the trained model as an artifact (zip).:w
     # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
