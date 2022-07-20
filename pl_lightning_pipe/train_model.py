@@ -48,8 +48,7 @@ task.connect(parameters)
 
 class BertBase(pl.LightningModule):
     
-    def __init__(self, x_train, y_train, x_val, y_val, x_test, y_test, params,
-                 hidden_size = 768, head_dropout = 0, warmup_steps=2, num_classes = 5):
+    def __init__(self, params, head_dropout = 0.2, num_classes = 5):
         super().__init__()
         self.learning_rate = params['lr']
         self.max_seq_len = params['max_length']
@@ -63,9 +62,11 @@ class BertBase(pl.LightningModule):
         self.config = AutoConfig.from_pretrained(self.model_str)
         self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
 
+        self.hidden_dim = 1024 if 'large' in self.model_str.split('-') else 768
+
         # The fine-tuning model head:
         layers = []
-        layers.append(nn.Linear(self.hparams.hidden_size, self.hparams.num_classes)) # type: ignore
+        layers.append(nn.Linear(self.hidden_dim, self.hparams.num_classes)) # type: ignore
         layers.append(nn.Dropout(self.hparams.head_dropout)) # type: ignore
         layers.append(nn.LogSoftmax(dim=1))
         self.new_layers = nn.Sequential(*layers)
