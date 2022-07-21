@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import StratifiedShuffleSplit
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -83,14 +82,32 @@ class TokenizeDataset(Dataset):
 
 class StratifiedSampler(Sampler):
     def __init__(self, y, batch_size):
-      self.y = y
+      self.y = torch.tensor(y)
       self.batch_size = batch_size
       self.n_splits = int(np.ceil(len(y) / batch_size))
       self.n_classes = len(np.unique(y))
       self.n_samples_per_split_per_class = int(np.ceil(len(y) / self.n_splits / self.n_classes))
 
-    def __iter__(self):
-      pass
+      # Create a list of indices for each class
+      sorted_y, sorted_idxs = torch.sort(self.y)
+      _, counts = torch.unique_consecutive(sorted_y, return_counts=True) # Return counts of elements in each class.
+      self.replace = counts < self.n_samples_per_split_per_class # Replace for given class, if not enough elements.
+      _class_idxs = torch.split(sorted_idxs, counts.tolist()) # Split the indices into each class.
+      self._class_idxs = tuple(elem.numpy() for elem in _class_idxs) # (n_class, idxs_class_n)
+
+    def __iter__(self):  # sourcery skip: for-append-to-extend, list-comprehension
+        batch_idxs = []
+        for i, elem in enumerate(self._class_idxs): 
+            batch_idxs.append(np.random.choice(elem, 
+                                               size=self.n_samples_per_split_per_class,
+                                               replace=self.replace[i] 
+                                               )
+                              ) # Generate batch indices for each class.
+
+        batch_idxs = np.concatenate(batch_idxs)
+        np.random.shuffle(batch_idxs) # Shuffle batch indices to break sequence order e.g (0,0,0, ... 4,4,4).
+        
+        return iter(batch_idxs)
 
     def __len__(self):
         return len(self.y)
@@ -246,11 +263,11 @@ valid_data = preprocess_task.artifacts['validation_data'].get()
 # test_data = pd.read_csv(test_path)
 # valid_data = pd.read_csv(valid_path)
 
-local_data_path = Path(os.getcwd()) / 'data' 
+# local_data_path = Path(os.getcwd()) / 'data' 
 
 # # #Defines training callbacks.
 model_name = parameters['pre_trained_model']
-model_path = local_data_path / 'models' / f'{model_name}'
+# model_path = local_data_path / 'models' / f'{model_name}'
 # model_path.mkdir(parents=True, exist_ok=True)
 
 # checkpoint_callback = ModelCheckpoint(
@@ -274,18 +291,18 @@ model_path = local_data_path / 'models' / f'{model_name}'
 
 # # #Stores the trained model as an artifact (zip).:w
 # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+# %% 
 
-
-max_len = 128
+max_len = 2
 model_str = parameters['pre_trained_model']
 train_dataset = TokenizeDataset(train_data, max_len, model_str)
-valid_dataset = TokenizeDataset(valid_data, max_len, model_str, eval=True)
-test_dataset = TokenizeDataset(test_data, max_len, model_str, eval=True)
+# valid_dataset = TokenizeDataset(valid_data, max_len, model_str, eval=True)
+# test_dataset = TokenizeDataset(test_data, max_len, model_str, eval=True)
 
     
 # %%
-train_dataloader = DataLoader(train_dataset, batch_size=1)
-val_dataloader = DataLoader(valid_dataset, batch_size=1)
-test_dataloader = DataLoader(test_dataset, batch_size=1)
+train_dataloader = DataLoader(train_data, batch_size=5, sampler=StratifiedSampler(train_data['label'].values, 5))
+# val_dataloader = DataLoader(valid_dataset, batch_size=1)
+# test_dataloader = DataLoader(test_dataset, batch_size=1)
 
 # %%
