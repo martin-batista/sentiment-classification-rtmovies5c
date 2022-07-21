@@ -110,7 +110,7 @@ def main():
     valid_save = validation_data[['label', 'text']].copy()
     test_save = test_data[['label', 'text']].copy()
 
-    #Stores data as artifacts.:w:w
+    #Stores data as artifacts.
     task.upload_artifact(name='train_data', artifact_object=train_save, wait_on_upload=True)
     task.upload_artifact(name='validation_data', artifact_object=valid_save, wait_on_upload=True)
     task.upload_artifact(name='test_data', artifact_object=test_save, wait_on_upload=True)

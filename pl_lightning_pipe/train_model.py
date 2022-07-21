@@ -1,16 +1,14 @@
-#https://www.kaggle.com/code/kickitlikeshika/bert-for-sentiment-analysis-5th-place-solution
-
-# %%
-
+from cgi import test
 from clearml import Task
 import os
 from pathlib import Path
+from typing import Dict
 import pandas as pd
 import numpy as np
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from transformers import AutoTokenizer # type: ignore
+from transformers import AutoModelForSequenceClassification, AutoTokenizer # type: ignore
 from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
@@ -20,22 +18,13 @@ from pytorch_lightning.loggers import TensorBoardLogger
 import torch
 from torch import nn, Tensor
 from torch.utils.data import DataLoader, Dataset, TensorDataset, DataLoader, Sampler
-from torchmetrics import Accuracy, ConfusionMatrix # type: ignore
+from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 
 
-# from torch.utils.tensorboard import SummaryWriter
-
-# Task.add_requirements('requirements.txt')
-# Task.add_requirements('requirements.txt')
-# task = Task.init(project_name=PROJECT_NAME, 
-#                 task_name='train_model',
-#                 task_type='training', #type: ignore 
-#                 )
-
-# task.execute_remotely('GPU')
+Task.add_requirements('requirements.txt')
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
@@ -44,11 +33,18 @@ parameters = {
         'max_length': 128,
         'lr': 2e-5,
         'num_epochs': 3,
+        'stratified_sampling': True,
         'accelerator': 'auto',
         'devices': 'auto',
     }
 
-# task.connect(parameters)
+task = Task.init(project_name=PROJECT_NAME, 
+                 task_name=parameters['pre_trained_model'],
+                 task_type='training', #type: ignore 
+                )
+
+task.execute_remotely('GPU')
+task.connect(parameters)
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
@@ -70,12 +66,12 @@ class TokenizeDataset(Dataset):
     def __getitem__(self, i):
         input_ids = torch.tensor(self.encode['input_ids'][i]) # type: ignore
         attention_mask = torch.tensor(self.encode['attention_mask'][i]) # type: ignore
-        
-        if self.eval:
-            return (input_ids, attention_mask)
 
-        sentiments = self.labels[i]
-        return (input_ids, attention_mask, sentiments)
+        if self.eval:
+            return {'input_ids': input_ids, 'attention_mask': attention_mask, 'labels': -1}
+
+        sentiments = torch.tensor(self.labels[i])
+        return {'input_ids': input_ids, 'attention_mask': attention_mask, 'labels': sentiments}
     
     def __len__(self):
         return len(self.text)
@@ -112,123 +108,109 @@ class StratifiedSampler(Sampler):
     def __len__(self):
         return len(self.y)
 
-class DataModule(pl.LightningDataModule):
-  pass
+class TransformerDataModule(pl.LightningDataModule):
+   
+   def __init__(self, params, train_data_path, test_data_path, valid_data_path = None, num_workers=8):
+       super().__init__()
+       self.params = params
+       self.train_data_path = train_data_path
+       self.test_data_path = test_data_path
+       self.valid_data_path = valid_data_path
+       self.batch_size = params['batch_size']
+       self.prepare_data_per_node = False
+       self.num_workers = num_workers
 
-class ModBertBase(pl.LightningModule):
+
+   def prepare_data(self):
+       train_data = pd.read_csv(self.train_data_path)
+       self.y = np.array(train_data['label'].values)
+       self.num_classes = len(np.unique(self.y))
+       test_data = pd.read_csv(self.test_data_path)
+       
+       self.train_tokenized = TokenizeDataset(train_data, self.params['max_length'],
+                                              self.params['pre_trained_model'])
+       self.test_tokenized = TokenizeDataset(test_data, self.params['max_length'],
+                                             self.params['pre_trained_model'], eval=True)
+       if self.valid_data_path:
+           valid_data = pd.read_csv(self.valid_data_path)
+           self.valid_tokenized = TokenizeDataset(valid_data, self.params['max_length'],
+                                                  self.params['pre_trained_model'])
+
+   def train_dataloader(self): 
+        if self.params['stratified_sampling']:
+            return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                              sampler=StratifiedSampler(self.y, self.batch_size),
+                              num_workers=self.num_workers)
+        else:
+            return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                              num_workers=self.num_workers)
     
-    def __init__(self, params, head_dropout = 0.2, num_classes = 5):
+   def val_dataloader(self):
+      return DataLoader(self.valid_tokenized, batch_size=self.batch_size, 
+                        num_workers=self.num_workers)
+    
+   def test_dataloader(self):
+      return DataLoader(self.test_tokenized, batch_size=self.batch_size,
+                        num_workers=self.num_workers)
+
+class TransformerBase(pl.LightningModule):
+    
+    def __init__(self, params, head_dropout = 0.2, num_classes = 5, hidden_dim = None):
         super().__init__()
         self.learning_rate = params['lr']
         self.max_seq_len = params['max_length']
         self.batch_size = params['batch_size']
+        self.num_classes = num_classes
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
         self.model_str = params['pre_trained_model']
+
         self.save_hyperparameters()
+        self.configure_metrics()
 
-        self.config = AutoConfig.from_pretrained(self.model_str)
-        self.pretrain_model  = AutoModel.from_pretrained(self.model_str, self.config)
+        config = AutoConfig.from_pretrained(self.model_str, num_labels=num_classes)
+        self.model  = AutoModelForSequenceClassification.from_config(config)
 
-        self.hidden_dim = 1024 if 'large' in self.model_str.split('-') else 768
+        if hidden_dim is None:
+            self.hidden_dim = 1024 if 'large' in self.model_str.split('-') else 768
+        else:
+            self.hidden_dim = hidden_dim
 
-        # The fine-tuning model head:
-        layers = []
-        layers.append(nn.Linear(self.hidden_dim, self.hparams.num_classes)) # type: ignore
-        layers.append(nn.Dropout(self.hparams.head_dropout)) # type: ignore
-        layers.append(nn.LogSoftmax(dim=1))
-        self.new_layers = nn.Sequential(*layers)
+    def configure_metrics(self) -> None:
+        self.prec = Precision(num_classes=self.num_classes, average="macro")
+        self.recall = Recall(num_classes=self.num_classes, average="macro")
+        self.confusion_matrix = ConfusionMatrix(num_classes=self.num_classes, normalize='true')
+        self.acc = Accuracy()
+        self.metrics = {"precision": self.prec, "recall": self.recall, "accuracy": self.acc}
 
-    def prepare_data(self):
-      tokenizer = AutoTokenizer.from_pretrained(self.model_str, trust_remote_code=True, use_fast=True) # type: ignore
+    def compute_metrics(self, preds, labels, mode="val") -> Dict[str, torch.Tensor]:
+        # Not required by all models. Only required for classification
+        return {f"{mode}_{k}": metric(preds, labels) for k, metric in self.metrics.items()}
 
-      tokens_train = tokenizer.batch_encode_plus(
-          x_train.tolist(),
-          padding='max_length',
-          max_length = self.max_seq_len,
-          truncation=True,
-          return_token_type_ids=False,
-          return_attention_mask=True,
-      )
+    def training_step(self, batch, batch_idx: int) -> torch.Tensor:
+        outputs = self.model(**batch) # out -> NamedTuple: (loss, logits, hidden_states, attentions)
+        loss = outputs.loss
+        self.log("train_loss", loss)
+        return loss
 
-      tokens_val = tokenizer.batch_encode_plus(
-          x_val.tolist(),
-          padding='max_length',
-          max_length = self.max_seq_len,
-          truncation=True,
-          return_token_type_ids=False,
-          return_attention_mask=True
-      )
+    def common_step(self, prefix: str, batch) -> torch.Tensor:
+        outputs = self.model(**batch)
+        loss = outputs.loss
+        logits = outputs.logits
+        preds = torch.argmax(logits, dim=1)
+        if batch["labels"] is not None:
+            metric_dict = self.compute_metrics(preds, batch["labels"], mode=prefix)
+            self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
+        return loss
 
-      tokens_test = tokenizer.batch_encode_plus(
-          x_test.tolist(),
-          padding='max_length',
-          max_length = self.max_seq_len,
-          truncation=True,
-          return_token_type_ids=False,
-          return_attention_mask=True
-      )
+    def validation_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
+        return self.common_step("val", batch)
 
-      self.train_seq = torch.tensor(tokens_train['input_ids'])
-      self.train_mask = torch.tensor(tokens_train['attention_mask'])
-      self.train_y = torch.tensor(y_train.tolist())
-
-      self.val_seq = torch.tensor(tokens_val['input_ids'])
-      self.val_mask = torch.tensor(tokens_val['attention_mask'])
-      self.val_y = torch.tensor(y_val.tolist())
-
-      self.test_seq = torch.tensor(tokens_test['input_ids'])
-      self.test_mask = torch.tensor(tokens_test['attention_mask'])
-      self.test_y = torch.tensor(y_test.tolist())
-
-    def forward(self, encode_id, mask): 
-        outputs = self.pretrain_model(encode_id, attention_mask=mask)
-        return self.new_layers(outputs.pooler_output)
-
-    def train_dataloader(self):
-      train_dataset = TensorDataset(self.train_seq, self.train_mask, self.train_y)
-      self.train_dataloader_obj = DataLoader(train_dataset, batch_size=self.batch_size)
-      return self.train_dataloader_obj
-
-    def val_dataloader(self):
-      test_dataset = TensorDataset(self.test_seq, self.test_mask, self.test_y)
-      self.test_dataloader_obj = DataLoader(test_dataset, batch_size=self.batch_size)
-      return self.test_dataloader_obj
-
-    def test_dataloader(self):
-      test_dataset = TensorDataset(self.test_seq, self.test_mask, self.test_y)
-      self.test_dataloader_obj = DataLoader(test_dataset, batch_size=self.batch_size)
-      return self.test_dataloader_obj
-
-    def training_step(self, batch, batch_idx):
-      encode_id, mask, targets = batch
-
-      outputs = self(encode_id, mask) 
-      preds = torch.argmax(outputs, dim=1)
-      train_accuracy = self.accuracy(preds, targets)
-      loss = self.loss(outputs, targets)
-
-      self.log('train_accuracy', train_accuracy, prog_bar=True, on_step=False, on_epoch=True)
-      self.log('train_loss', loss, on_step=False, on_epoch=True)
-      return {"loss":loss, 'train_accuracy': train_accuracy}
-
-    def validation_step(self, batch, batch_idx):
-      encode_id, mask, targets = batch
-      outputs = self.forward(encode_id, mask)
-      preds = torch.argmax(outputs, dim=1)
-      val_accuracy = self.accuracy(preds, targets)
-      loss = self.loss(outputs, targets)
-      self.log("val_accuracy", val_accuracy, prog_bar = True, on_step = True, on_epoch=True)
-      self.log("val_loss", loss, on_step = True, on_epoch=True)
-      return {"val_loss":loss, "val_accuracy": val_accuracy}
-    
-    def test_step(self, batch, batch_idx):
-      encode_id, mask, targets = batch
-      outputs = self.forward(encode_id, mask)
-      preds = torch.argmax(outputs, dim=1)
-      test_accuracy = self.accuracy(preds, targets)
-      loss = self.loss(outputs, targets)
-      return {"test_loss":loss, "test_accuracy":test_accuracy, "preds":preds, "targets":targets}
+    def test_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
+        if -1 in batch["labels"]:
+            batch["labels"] = None
+        return self.common_step("test", batch)
 
     def test_epoch_end(self, outputs):
       test_outs = []
@@ -244,65 +226,38 @@ class ModBertBase(pl.LightningModule):
     def configure_optimizers(self):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-# %%
-
-#Grabs the preprocessed data from the previous step:
-preprocess_task = Task.get_task(task_name='data_split',
-                              project_name=PROJECT_NAME)
+    #Grabs the preprocessed data from the previous step:
+    preprocess_task = Task.get_task(task_name='data_split',
+                                project_name=PROJECT_NAME)
 
 
-Path('data/interim').mkdir(parents=True, exist_ok=True)
+    Path('data/interim').mkdir(parents=True, exist_ok=True)
 
-train_data = preprocess_task.artifacts['train_data'].get()
-test_data = preprocess_task.artifacts['test_data'].get()
-valid_data = preprocess_task.artifacts['validation_data'].get()
+    train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
+    test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
+    valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
 
-# train_data = pd.read_csv(train_path)
-# test_data = pd.read_csv(test_path)
-# valid_data = pd.read_csv(valid_path)
+    # # #Defines training callbacks.
+    model_name = parameters['pre_trained_model']
+    # model_path = local_data_path / 'models' / f'{model_name}'
+    # model_path.mkdir(parents=True, exist_ok=True)
 
-# local_data_path = Path(os.getcwd()) / 'data' 
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_loss',
+    #     dirpath=str(model_path)
+    #     )
 
-# # #Defines training callbacks.
-model_name = parameters['pre_trained_model']
-# model_path = local_data_path / 'models' / f'{model_name}'
-# model_path.mkdir(parents=True, exist_ok=True)
+    # #Trains the model.
+    dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
+    model = TransformerBase(params=parameters)
 
-# checkpoint_callback = ModelCheckpoint(
-#     monitor='val_loss',
-#     dirpath=str(model_path)
-#     )
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+                        devices=parameters['devices'], logger=True)
 
-# #Trains the model.
-# x_train, x_val, x_test = train_data['text'], valid_data['text'], test_data['text']
-# y_train, y_val, y_test = train_data['label'], valid_data['label'], test_data['label']
+    trainer.fit(model, dm)
+    trainer.save_checkpoint(f"{model_name}.ckpt")
 
-
-# model = BertBase(params=parameters)
-
-# # # # model = train_model(dm, parameters)
-# trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-#                      devices=parameters['devices'], logger=True)
-
-# trainer.fit(model)
-# trainer.save_checkpoint(f"{model_name}.ckpt")
-
-# # #Stores the trained model as an artifact (zip).:w
-# task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
-# %% 
-
-max_len = 2
-model_str = parameters['pre_trained_model']
-train_dataset = TokenizeDataset(train_data, max_len, model_str)
-# valid_dataset = TokenizeDataset(valid_data, max_len, model_str, eval=True)
-# test_dataset = TokenizeDataset(test_data, max_len, model_str, eval=True)
-
-    
-# %%
-train_dataloader = DataLoader(train_data, batch_size=5, sampler=StratifiedSampler(train_data['label'].values, 5))
-# val_dataloader = DataLoader(valid_dataset, batch_size=1)
-# test_dataloader = DataLoader(test_dataset, batch_size=1)
-
-# %%
+    # # #Stores the trained model as an artifact (zip).
+    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
