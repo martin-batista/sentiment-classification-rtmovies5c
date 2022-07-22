@@ -7,6 +7,7 @@ import numpy as np
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
+from regex import P
 from transformers import AutoModelForSequenceClassification, AutoTokenizer # type: ignore
 from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
@@ -129,7 +130,7 @@ class TransformerDataModule(pl.LightningDataModule):
        self.train_tokenized = TokenizeDataset(train_data, self.params['max_length'],
                                               self.params['pre_trained_model'])
        self.test_tokenized = TokenizeDataset(test_data, self.params['max_length'],
-                                             self.params['pre_trained_model'], eval=True)
+                                             self.params['pre_trained_model'])
        if self.valid_data_path:
            valid_data = pd.read_csv(self.valid_data_path)
            self.valid_tokenized = TokenizeDataset(valid_data, self.params['max_length'],
@@ -207,6 +208,12 @@ class TransformerBase(pl.LightningModule):
         if -1 in batch["labels"]:
             batch["labels"] = None
         return self.common_step("test", batch)
+
+    def predict_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
+        batch["labels"] = None
+        outputs = self.model(**batch)
+        logits = outputs.logits
+        return torch.argmax(logits, dim=1)
 
     def configure_optimizers(self):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
