@@ -233,7 +233,7 @@ if __name__ == '__main__':
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
-                                project_name=PROJECT_NAME)
+                                    project_name=PROJECT_NAME)
 
 
     Path('data/interim').mkdir(parents=True, exist_ok=True)
