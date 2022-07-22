@@ -1,4 +1,9 @@
-from cgi import test
+
+# %%
+!pip install -r requirements.txt
+
+# %%
+
 from clearml import Task
 import os
 from pathlib import Path
@@ -24,27 +29,30 @@ import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 
 
-Task.add_requirements('requirements.txt')
+# Task.add_requirements('requirements.txt')
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 32,
+        'batch_size': 16,
         'max_length': 128,
         'lr': 2e-5,
-        'num_epochs': 3,
+        'num_epochs': 10,
         'stratified_sampling': True,
         'accelerator': 'auto',
         'devices': 'auto',
     }
 
-task = Task.init(project_name=PROJECT_NAME, 
-                 task_name=parameters['pre_trained_model'],
-                 task_type='training', #type: ignore 
-                )
+# task = Task.init(project_name=PROJECT_NAME, 
+#                 #  task_name=parameters['pre_trained_model'],
+#                  task_name='Test1',
+#                  task_type='training', #type: ignore 
+#                 )
 
-task.execute_remotely('GPU')
-task.connect(parameters)
+# task.execute_remotely('GPU')
+# task.connect(parameters)
+
+# os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
@@ -54,7 +62,7 @@ class TokenizeDataset(Dataset):
         if not self.eval:
             self.labels = df['label'].values
             
-        tokenizer = AutoTokenizer.from_pretrained(model_str, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_str, trust_remote_code=True, use_fast=False)
         self.encode = tokenizer.batch_encode_plus(
             self.text,
             padding='max_length',
@@ -93,12 +101,13 @@ class StratifiedSampler(Sampler):
 
     def __iter__(self):  # sourcery skip: for-append-to-extend, list-comprehension
         batch_idxs = []
-        for i, elem in enumerate(self._class_idxs): 
-            batch_idxs.append(np.random.choice(elem, 
-                                               size=self.n_samples_per_split_per_class,
-                                               replace=self.replace[i] 
-                                               )
-                              ) # Generate batch indices for each class.
+        for _ in range(self.n_splits): # For each split
+            for i, elem in enumerate(self._class_idxs): 
+                batch_idxs.append(np.random.choice(elem, 
+                                                size=self.n_samples_per_split_per_class,
+                                                replace=self.replace[i] 
+                                                )
+                                ) # Generate stratified batch indices for each class.
 
         batch_idxs = np.concatenate(batch_idxs)
         np.random.shuffle(batch_idxs) # Shuffle batch indices to break sequence order e.g (0,0,0, ... 4,4,4).
@@ -226,38 +235,43 @@ class TransformerBase(pl.LightningModule):
     def configure_optimizers(self):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    #Grabs the preprocessed data from the previous step:
-    preprocess_task = Task.get_task(task_name='data_split',
-                                project_name=PROJECT_NAME)
+# %%
+
+#Grabs the preprocessed data from the previous step:
+preprocess_task = Task.get_task(task_name='data_split',
+                            project_name=PROJECT_NAME)
 
 
-    Path('data/interim').mkdir(parents=True, exist_ok=True)
+Path('data/interim').mkdir(parents=True, exist_ok=True)
 
-    train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
-    test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
-    valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
+train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
+test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
+valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
 
-    # # #Defines training callbacks.
-    model_name = parameters['pre_trained_model']
-    # model_path = local_data_path / 'models' / f'{model_name}'
-    # model_path.mkdir(parents=True, exist_ok=True)
+# # #Defines training callbacks.
+model_name = parameters['pre_trained_model']
+# model_path = local_data_path / 'models' / f'{model_name}'
+# model_path.mkdir(parents=True, exist_ok=True)
 
-    # checkpoint_callback = ModelCheckpoint(
-    #     monitor='val_loss',
-    #     dirpath=str(model_path)
-    #     )
+# checkpoint_callback = ModelCheckpoint(
+#     monitor='val_loss',
+#     dirpath=str(model_path)
+#     )
 
-    # #Trains the model.
-    dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
-    model = TransformerBase(params=parameters)
+# #Trains the model.
+dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
+model = TransformerBase(params=parameters)
 
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-                        devices=parameters['devices'], logger=True)
 
-    trainer.fit(model, dm)
-    trainer.save_checkpoint(f"{model_name}.ckpt")
+# %%
 
-    # # #Stores the trained model as an artifact (zip).
-    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
+                    devices=parameters['devices'], logger=True)
+
+trainer.fit(model, dm)
+# trainer.save_checkpoint(f"{model_name}.ckpt")
+
+# # #Stores the trained model as an artifact (zip).
+# task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
