@@ -14,7 +14,7 @@ from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
 from pytorch_lightning.loggers import TensorBoardLogger
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter # type: ignore
 
 import torch
 from torch import nn, Tensor
@@ -270,14 +270,14 @@ if __name__ == '__main__':
 
     labels = [batch['labels'] for batch in dm.predict_dataloader()]
     labels = torch.cat(labels)
-    preds = torch.cat(preds)
+    preds = torch.cat(preds)  # type: ignore
 
     cm = ConfusionMatrix(num_classes=5, normalize='true')
     conf_mat = cm(preds, labels)
 
     df_cm = pd.DataFrame(conf_mat.cpu().numpy(), index = range(model.num_classes), columns=range(model.num_classes))
     plt.figure(figsize = (10,8))
-    fig_ = sns.heatmap(df_cm, annot=True, linewidths=.5, cmap="YlGnBu", fmt='.2f').get_figure()
+    fig_ = sns.heatmap(df_cm, annot=True, linewidths=.5, cmap="YlGnBu", fmt='.2f').get_figure()  # type: ignore
     plt.close(fig_)
 
     writer = SummaryWriter()
