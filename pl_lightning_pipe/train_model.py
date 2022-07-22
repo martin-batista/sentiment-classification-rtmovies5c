@@ -28,7 +28,7 @@ parameters = {
         'validation_split': 0.1,
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 16,
+        'batch_size': 32,
         'max_length': 64,
         'lr': 2e-5,
         'num_epochs': 3,
