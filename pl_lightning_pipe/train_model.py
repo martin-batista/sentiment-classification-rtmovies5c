@@ -232,7 +232,7 @@ class TransformerBase(pl.LightningModule):
 
 
 if __name__ == '__main__':
-    pl.seed_everythingt(parameters['seed'])
+    pl.seed_everything(parameters['seed'])
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                 project_name=PROJECT_NAME)
@@ -261,7 +261,7 @@ if __name__ == '__main__':
     model = TransformerBase(params=parameters)
 
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
-                         accelerator=parameters['accelerator'], 
+                         accelerator='gpu', 
                          devices=parameters['devices'], logger=True)
 
     trainer.fit(model, dm)
