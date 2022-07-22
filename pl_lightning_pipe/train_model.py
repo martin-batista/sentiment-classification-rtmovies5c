@@ -37,7 +37,7 @@ parameters = {
 
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
-                 task_name=parameters['name'],
+                 task_name=parameters['pre_trained_model'],
                  task_type='training', #type: ignore 
                 )
 
