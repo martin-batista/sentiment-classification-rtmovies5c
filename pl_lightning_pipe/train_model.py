@@ -40,7 +40,7 @@ parameters = {
     }
 
 task.connect(parameters)
-Task.add_requirements('requirements.txt')
+Task.add_requirements('../requirements.txt')
 
 task.execute_remotely('GPU')
 
