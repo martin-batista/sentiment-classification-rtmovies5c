@@ -21,12 +21,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pipe_conf import PROJECT_NAME
 
-Task.add_requirements('requirements.txt')
-task = Task.init(project_name=PROJECT_NAME, 
-                 task_name='bert-base-uncased',
-                 task_type='training', #type: ignore 
-                )
-
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
@@ -39,6 +33,13 @@ parameters = {
         'accelerator': 'auto',
         'devices': 'auto',
     }
+
+
+Task.add_requirements('requirements.txt')
+task = Task.init(project_name=PROJECT_NAME, 
+                 task_name=parameters['name'],
+                 task_type='training', #type: ignore 
+                )
 
 task.connect(parameters)
 task.execute_remotely('GPU')
