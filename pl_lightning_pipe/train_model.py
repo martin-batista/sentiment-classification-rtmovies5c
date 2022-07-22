@@ -121,7 +121,6 @@ class TransformerDataModule(pl.LightningDataModule):
        self.prepare_data_per_node = False
        self.num_workers = num_workers
 
-
    def prepare_data(self):
        train_data = pd.read_csv(self.train_data_path)
        self.y = np.array(train_data['label'].values)
@@ -188,12 +187,6 @@ class TransformerBase(pl.LightningModule):
         # Not required by all models. Only required for classification
         return {f"{mode}_{k}": metric(preds, labels) for k, metric in self.metrics.items()}
 
-    def training_step(self, batch, batch_idx: int) -> torch.Tensor:
-        outputs = self.model(**batch) # out -> NamedTuple: (loss, logits, hidden_states, attentions)
-        loss = outputs.loss
-        self.log("train_loss", loss)
-        return loss
-
     def common_step(self, prefix: str, batch) -> torch.Tensor:
         outputs = self.model(**batch)
         loss = outputs.loss
@@ -205,6 +198,9 @@ class TransformerBase(pl.LightningModule):
             self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
         return loss
 
+    def training_step(self, batch, batch_idx: int) -> torch.Tensor:
+        return self.common_step("train", batch)
+
     def validation_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
         return self.common_step("val", batch)
 
@@ -213,19 +209,9 @@ class TransformerBase(pl.LightningModule):
             batch["labels"] = None
         return self.common_step("test", batch)
 
-    def test_epoch_end(self, outputs):
-      test_outs = []
-      for test_out in outputs:
-          out = test_out['test_accuracy'] # type: ignore
-          test_outs.append(out)
-      
-      total_test_accuracy = torch.stack(test_outs).mean()
-      self.log('total_test_accuracy', total_test_accuracy, on_step=False, on_epoch=True)
-
-      return total_test_accuracy
-
     def configure_optimizers(self):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+
 
 if __name__ == '__main__':
     #Grabs the preprocessed data from the previous step:
@@ -254,8 +240,6 @@ if __name__ == '__main__':
     # #Trains the model.
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
     model = TransformerBase(params=parameters)
-
-
 
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                          accelerator=parameters['accelerator'], 
