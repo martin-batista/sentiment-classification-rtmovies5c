@@ -64,7 +64,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--batch_size', default=32, type=int)
     parser = pl.Trainer.add_argparse_args(parser)
-    parser.set_defaults(max_epochs=3, gpus=8)
+    parser.set_defaults(max_epochs=3, gpus=1)
     parser = LitClassifier.add_model_specific_args(parser)
     args = parser.parse_args()
 
