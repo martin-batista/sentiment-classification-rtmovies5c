@@ -94,4 +94,4 @@ if __name__ == '__main__':
     # ------------
     # testing
     # ------------
-    trainer.test(test_dataloaders=test_loader)
+    trainer.test(test_loader)
