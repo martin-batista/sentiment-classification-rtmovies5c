@@ -7,6 +7,7 @@ import numpy as np
 
 from pipe_conf import PROJECT_NAME
 
+Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
                  task_name='bert-base-uncased',
                  task_type='training', #type: ignore 
@@ -37,7 +38,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-task.add_requirements('requirements.txt')
 
 parameters = {
         'validation_split': 0.1,
@@ -207,8 +207,8 @@ class TransformerBase(pl.LightningModule):
             self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
             
-            conf_mat = self.confusion_matrix(preds, batch["labels"])
-            df_cm = pd.DataFrame(conf_mat.numpy(), index = range(self.num_classes), columns=range(self.num_classes))
+            conf_mat = self.confusion_matrix(preds, batch["labels"]).detach().cpu().numpy()
+            df_cm = pd.DataFrame(conf_mat, index = range(self.num_classes), columns=range(self.num_classes))
             plt.figure(figsize = (10,10))
             fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
             plt.close(fig_)
