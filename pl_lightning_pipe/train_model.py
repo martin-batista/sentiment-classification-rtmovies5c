@@ -32,7 +32,6 @@ parameters = {
 task.connect(parameters)
 task.execute_remotely('GPU')
 
-
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from regex import P
@@ -236,6 +235,7 @@ class TransformerBase(pl.LightningModule):
 
 
 if __name__ == '__main__':
+    pl.seed_everythingt(parameters['seed'])
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                 project_name=PROJECT_NAME)
