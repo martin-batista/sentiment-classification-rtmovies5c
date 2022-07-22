@@ -23,7 +23,7 @@ import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 
 
-# Task.add_requirements('requirements.txt')
+Task.add_requirements('requirements.txt')
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
