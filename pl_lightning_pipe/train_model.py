@@ -38,8 +38,7 @@ parameters = {
     }
 
 task = Task.init(project_name=PROJECT_NAME, 
-                #  task_name=parameters['pre_trained_model'],
-                 task_name='Test1',
+                 task_name=parameters['pre_trained_model'],
                  task_type='training', #type: ignore 
                 )
 
