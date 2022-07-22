@@ -181,7 +181,7 @@ class TransformerBase(pl.LightningModule):
         self.recall = Recall(num_classes=self.num_classes, average="macro")
         self.confusion_matrix = ConfusionMatrix(num_classes=self.num_classes, normalize='true')
         self.acc = Accuracy()
-        self.metrics = {"precision": self.prec, "recall": self.recall, "accuracy": self.acc}
+        self.metrics = {"precision": self.prec, "recall": self.recall, "accuracy": self.acc, "conf_mat": self.confusion_matrix}
 
     def compute_metrics(self, preds, labels, mode="val") -> Dict[str, torch.Tensor]:
         # Not required by all models. Only required for classification
