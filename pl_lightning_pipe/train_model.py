@@ -267,6 +267,7 @@ if __name__ == '__main__':
 
     writer = SummaryWriter()
     writer.add_figure("Confusion matrix", fig_, model.current_epoch)
+    task.get_logger().report_matplotlib_figure("Confusion matrix", "Validation data", fig_)
 
     # # #Stores the trained model as an artifact (zip).
     # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
