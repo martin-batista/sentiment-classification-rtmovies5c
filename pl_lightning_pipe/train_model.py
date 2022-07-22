@@ -1,9 +1,3 @@
-
-# %%
-!pip install -r requirements.txt
-
-# %%
-
 from clearml import Task
 import os
 from pathlib import Path
@@ -35,24 +29,23 @@ parameters = {
         'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 16,
-        'max_length': 128,
+        'max_length': 64,
         'lr': 2e-5,
-        'num_epochs': 10,
+        'num_epochs': 3,
         'stratified_sampling': True,
         'accelerator': 'auto',
         'devices': 'auto',
     }
 
-# task = Task.init(project_name=PROJECT_NAME, 
-#                 #  task_name=parameters['pre_trained_model'],
-#                  task_name='Test1',
-#                  task_type='training', #type: ignore 
-#                 )
+task = Task.init(project_name=PROJECT_NAME, 
+                #  task_name=parameters['pre_trained_model'],
+                 task_name='Test1',
+                 task_type='training', #type: ignore 
+                )
 
-# task.execute_remotely('GPU')
-# task.connect(parameters)
+task.execute_remotely('GPU')
+task.connect(parameters)
 
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
@@ -119,7 +112,7 @@ class StratifiedSampler(Sampler):
 
 class TransformerDataModule(pl.LightningDataModule):
    
-   def __init__(self, params, train_data_path, test_data_path, valid_data_path = None, num_workers=8):
+   def __init__(self, params, train_data_path, test_data_path, valid_data_path = None, num_workers=2):
        super().__init__()
        self.params = params
        self.train_data_path = train_data_path
@@ -235,43 +228,43 @@ class TransformerBase(pl.LightningModule):
     def configure_optimizers(self):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
 
-# if __name__ == '__main__':
-
-# %%
-
-#Grabs the preprocessed data from the previous step:
-preprocess_task = Task.get_task(task_name='data_split',
-                            project_name=PROJECT_NAME)
+if __name__ == '__main__':
+    #Grabs the preprocessed data from the previous step:
+    preprocess_task = Task.get_task(task_name='data_split',
+                                project_name=PROJECT_NAME)
 
 
-Path('data/interim').mkdir(parents=True, exist_ok=True)
+    Path('data/interim').mkdir(parents=True, exist_ok=True)
 
-train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
-test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
-valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
+    train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
+    test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
+    valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
 
-# # #Defines training callbacks.
-model_name = parameters['pre_trained_model']
-# model_path = local_data_path / 'models' / f'{model_name}'
-# model_path.mkdir(parents=True, exist_ok=True)
+    # # #Defines training callbacks.
+    model_name = parameters['pre_trained_model']
+    local_data_path = Path('data/models/')
+    local_data_path.mkdir(parents=True, exists_ok=True)
+    model_path = local_data_path / 'models' / f'{model_name}'
+    model_path.mkdir(parents=True, exist_ok=True)
 
-# checkpoint_callback = ModelCheckpoint(
-#     monitor='val_loss',
-#     dirpath=str(model_path)
-#     )
+    checkpoint_callback = ModelCheckpoint(
+        monitor='val_loss',
+        dirpath=str(model_path)
+        )
 
-# #Trains the model.
-dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
-model = TransformerBase(params=parameters)
+    # #Trains the model.
+    dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
+    model = TransformerBase(params=parameters)
 
 
-# %%
 
-trainer = pl.Trainer(max_epochs=parameters['num_epochs'], accelerator=parameters['accelerator'], 
-                    devices=parameters['devices'], logger=True)
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
+                         accelerator=parameters['accelerator'], 
+                         devices=parameters['devices'], logger=True,
+                         callbacks=[checkpoint_callback])
 
-trainer.fit(model, dm)
-# trainer.save_checkpoint(f"{model_name}.ckpt")
+    trainer.fit(model, dm)
+    trainer.save_checkpoint(f"{model_name}.ckpt")
 
-# # #Stores the trained model as an artifact (zip).
-# task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+    # # #Stores the trained model as an artifact (zip).
+    task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
