@@ -22,8 +22,10 @@ from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ig
 import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 
-
-Task.add_requirements('requirements.txt')
+task = Task.init(project_name=PROJECT_NAME, 
+                 task_name='bert-base-uncased',
+                 task_type='training', #type: ignore 
+                )
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
@@ -37,14 +39,10 @@ parameters = {
         'devices': 'auto',
     }
 
-task = Task.init(project_name=PROJECT_NAME, 
-                 task_name=parameters['pre_trained_model'],
-                 task_type='training', #type: ignore 
-                )
+task.connect(parameters)
+Task.add_requirements('requirements.txt')
 
 task.execute_remotely('GPU')
-task.connect(parameters)
-
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
