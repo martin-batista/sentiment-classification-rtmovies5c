@@ -16,6 +16,22 @@ task = Task.init(project_name=PROJECT_NAME,
 
 task.add_requirements('requirements.txt')
 
+parameters = {
+        'validation_split': 0.1,
+        'seed': 42,
+        'pre_trained_model': 'bert-base-uncased',
+        'batch_size': 32,
+        'max_length': 64,
+        'lr': 2e-5,
+        'num_epochs': 3,
+        'stratified_sampling': True,
+        'accelerator': 'auto',
+        'devices': 'auto',
+    }
+
+task.connect(parameters)
+task.execute_remotely('GPU')
+
 
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -36,24 +52,6 @@ import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-
-
-parameters = {
-        'validation_split': 0.1,
-        'seed': 42,
-        'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 32,
-        'max_length': 64,
-        'lr': 2e-5,
-        'num_epochs': 3,
-        'stratified_sampling': True,
-        'accelerator': 'auto',
-        'devices': 'auto',
-    }
-
-task.connect(parameters)
-task.execute_remotely('GPU')
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
