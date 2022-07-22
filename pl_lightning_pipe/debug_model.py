@@ -12,6 +12,7 @@ from pipe_conf import PROJECT_NAME
 
 # Connecting ClearML with the current process,
 # from here on everything is logged automatically
+Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, task_name="PyTorch lightning MNIST example")
 task.execute_remotely('GPU')
 
