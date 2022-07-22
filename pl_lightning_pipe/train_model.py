@@ -228,10 +228,10 @@ if __name__ == '__main__':
                                     project_name=PROJECT_NAME)
 
 
-    pre_conf = preprocess_task.get_configuration_objects()
-    task.connect(pre_conf)
+    pre_conf = preprocess_task.get_parameters_as_dict(cast=True)
+    task.connect(pre_conf['General'])
 
-    pl.seed_everything(int(task.get_configuration_object('seed'))) # type: ignore
+    pl.seed_everything(task.get_parameter('General/seed')) # type: ignore
 
     Path('data/interim').mkdir(parents=True, exist_ok=True)
 
