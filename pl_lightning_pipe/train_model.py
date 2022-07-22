@@ -26,6 +26,9 @@ task = Task.init(project_name=PROJECT_NAME,
                  task_name='bert-base-uncased',
                  task_type='training', #type: ignore 
                 )
+
+Task.add_requirements('requirements.txt')
+
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
@@ -40,8 +43,6 @@ parameters = {
     }
 
 task.connect(parameters)
-Task.add_requirements('../requirements.txt')
-
 task.execute_remotely('GPU')
 
 class TokenizeDataset(Dataset):
