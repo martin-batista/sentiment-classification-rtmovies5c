@@ -5,6 +5,8 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 
+from pipe_conf import PROJECT_NAME
+
 task = Task.init(project_name=PROJECT_NAME, 
                  task_name='bert-base-uncased',
                  task_type='training', #type: ignore 
@@ -21,7 +23,6 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer # typ
 from lightning_transformers.task.nlp.text_classification import (
     TextClassificationDataModule,
 )
-from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.tensorboard import SummaryWriter
 
@@ -34,11 +35,6 @@ import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-task = Task.init(project_name=PROJECT_NAME, 
-                 task_name='bert-base-uncased',
-                 task_type='training', #type: ignore 
-                )
 
 
 task.add_requirements('requirements.txt')
