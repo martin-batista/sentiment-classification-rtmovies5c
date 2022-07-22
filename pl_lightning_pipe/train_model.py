@@ -22,13 +22,11 @@ import seaborn as sns
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-        'validation_split': 0.2,
-        'seed': 42,
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 32,
-        'max_length': 64,
+        'batch_size': 16,
+        'max_length': 128,
         'lr': 2e-5,
-        'num_epochs': 3,
+        'num_epochs': 10,
         'stratified_sampling': True,
         'accelerator': 'auto',
         'devices': 'auto',
@@ -224,14 +222,19 @@ class TransformerBase(pl.LightningModule):
 
 
 if __name__ == '__main__':
-    pl.seed_everything(parameters['seed'])
 
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
 
 
+    pre_conf = preprocess_task.get_configuration_objects()
+    task.connect(pre_conf)
+
+    pl.seed_everything(int(task.get_configuration_object('seed'))) # type: ignore
+
     Path('data/interim').mkdir(parents=True, exist_ok=True)
+
 
     train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
     test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
@@ -269,7 +272,3 @@ if __name__ == '__main__':
     writer = SummaryWriter()
     writer.add_figure("Confusion matrix", fig_, model.current_epoch)
     task.get_logger().report_matplotlib_figure("Confusion matrix", "Validation data", fig_)
-
-    # # #Stores the trained model as an artifact (zip).
-    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
-
