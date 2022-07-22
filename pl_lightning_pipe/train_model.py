@@ -227,15 +227,15 @@ if __name__ == '__main__':
 
     # # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
-    local_data_path = Path('data/models/')
-    local_data_path.mkdir(parents=True, exist_ok=True)
-    model_path = local_data_path / 'models' / f'{model_name}'
-    model_path.mkdir(parents=True, exist_ok=True)
+    # local_data_path = Path('data/models/')
+    # local_data_path.mkdir(parents=True, exist_ok=True)
+    # model_path = local_data_path / 'models' / f'{model_name}'
+    # model_path.mkdir(parents=True, exist_ok=True)
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val_loss',
-        dirpath=str(model_path)
-        )
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_loss',
+    #     dirpath=str(model_path)
+    #     )
 
     # #Trains the model.
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
@@ -243,11 +243,10 @@ if __name__ == '__main__':
 
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                          accelerator=parameters['accelerator'], 
-                         devices=parameters['devices'], logger=True,
-                         callbacks=[checkpoint_callback])
+                         devices=parameters['devices'], logger=True)
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
     # # #Stores the trained model as an artifact (zip).
-    task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+    # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
