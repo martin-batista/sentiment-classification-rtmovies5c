@@ -14,6 +14,7 @@ from lightning_transformers.task.nlp.text_classification import (
 )
 from pipe_conf import PROJECT_NAME
 from pytorch_lightning.loggers import TensorBoardLogger
+from torch.utils.tensorboard import SummaryWriter
 
 import torch
 from torch import nn, Tensor
@@ -22,6 +23,8 @@ from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ig
 
 import pytorch_lightning as pl
 from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 task = Task.init(project_name=PROJECT_NAME, 
                  task_name='bert-base-uncased',
@@ -164,6 +167,7 @@ class TransformerBase(pl.LightningModule):
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
         self.model_str = params['pre_trained_model']
+        self.writer = SummaryWriter()
 
         self.save_hyperparameters()
         self.configure_metrics()
@@ -181,7 +185,7 @@ class TransformerBase(pl.LightningModule):
         self.recall = Recall(num_classes=self.num_classes, average="macro")
         self.confusion_matrix = ConfusionMatrix(num_classes=self.num_classes)
         self.acc = Accuracy()
-        self.metrics = {"precision": self.prec, "recall": self.recall, "accuracy": self.acc, "conf_mat": self.confusion_matrix}
+        self.metrics = {"precision": self.prec, "recall": self.recall, "accuracy": self.acc}
 
     def compute_metrics(self, preds, labels, mode="val") -> Dict[str, torch.Tensor]:
         # Not required by all models. Only required for classification
@@ -196,6 +200,14 @@ class TransformerBase(pl.LightningModule):
             metric_dict = self.compute_metrics(preds, batch["labels"], mode=prefix)
             self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
+            
+            conf_mat = self.confusion_matrix(preds, batch["labels"])
+            df_cm = pd.DataFrame(conf_mat.numpy(), index = range(self.num_classes), columns=range(self.num_classes))
+            plt.figure(figsize = (10,10))
+            fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
+            plt.close(fig_)
+        
+            self.writer.add_figure("Confusion matrix", fig_, self.current_epoch)
         return loss
 
     def training_step(self, batch, batch_idx: int) -> torch.Tensor:
