@@ -242,7 +242,7 @@ if __name__ == '__main__':
     # # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
     local_data_path = Path('data/models/')
-    local_data_path.mkdir(parents=True, exists_ok=True)
+    local_data_path.mkdir(parents=True, exist_ok=True)
     model_path = local_data_path / 'models' / f'{model_name}'
     model_path.mkdir(parents=True, exist_ok=True)
 
