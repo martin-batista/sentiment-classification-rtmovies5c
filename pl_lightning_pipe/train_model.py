@@ -1,3 +1,4 @@
+# %%
 from clearml import Task
 import os
 from pathlib import Path
@@ -5,6 +6,25 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
+from regex import P
+from transformers import AutoModelForSequenceClassification, AutoTokenizer # type: ignore
+from lightning_transformers.task.nlp.text_classification import (
+    TextClassificationDataModule,
+)
+from pytorch_lightning.loggers import TensorBoardLogger
+from torch.utils.tensorboard import SummaryWriter
+
+import torch
+from torch import nn, Tensor
+from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
+from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
+
+import pytorch_lightning as pl
+from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
+import matplotlib.pyplot as plt
+import seaborn as sns
 from pipe_conf import PROJECT_NAME
 
 Task.add_requirements('requirements.txt')
@@ -28,26 +48,6 @@ parameters = {
 
 task.connect(parameters)
 task.execute_remotely('GPU')
-
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
-from regex import P
-from transformers import AutoModelForSequenceClassification, AutoTokenizer # type: ignore
-from lightning_transformers.task.nlp.text_classification import (
-    TextClassificationDataModule,
-)
-from pytorch_lightning.loggers import TensorBoardLogger
-from torch.utils.tensorboard import SummaryWriter
-
-import torch
-from torch import nn, Tensor
-from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
-from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
-
-import pytorch_lightning as pl
-from transformers import AutoModel, AutoConfig, AutoTokenizer # type: ignore
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
@@ -156,6 +156,11 @@ class TransformerDataModule(pl.LightningDataModule):
       return DataLoader(self.test_tokenized, batch_size=self.batch_size,
                         num_workers=self.num_workers)
 
+   def predict_dataloader(self):
+      #Use validation data for predictions.
+      return DataLoader(self.valid_tokenized, batch_size=self.batch_size,
+                        num_workers=self.num_workers)    
+
 class TransformerBase(pl.LightningModule):
     
     def __init__(self, params, head_dropout = 0.2, num_classes = 5, hidden_dim = None):
@@ -167,7 +172,6 @@ class TransformerBase(pl.LightningModule):
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
         self.model_str = params['pre_trained_model']
-        self.writer = SummaryWriter()
 
         self.save_hyperparameters()
         self.configure_metrics()
@@ -179,11 +183,13 @@ class TransformerBase(pl.LightningModule):
             self.hidden_dim = 1024 if 'large' in self.model_str.split('-') else 768
         else:
             self.hidden_dim = hidden_dim
+    
+    def forward(self, input_ids, attention_mask):
+        return self.model(input_ids, attention_mask=attention_mask)
 
     def configure_metrics(self) -> None:
         self.prec = Precision(num_classes=self.num_classes, average="macro")
         self.recall = Recall(num_classes=self.num_classes, average="macro")
-        self.confusion_matrix = ConfusionMatrix(num_classes=self.num_classes)
         self.acc = Accuracy()
         self.metrics = {"precision": self.prec, "recall": self.recall, "accuracy": self.acc}
 
@@ -200,29 +206,20 @@ class TransformerBase(pl.LightningModule):
             metric_dict = self.compute_metrics(preds, batch["labels"], mode=prefix)
             self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
-            
-            # conf_mat = self.confusion_matrix(preds, batch["labels"]).detach().cpu().numpy()
-            # df_cm = pd.DataFrame(conf_mat, index = range(self.num_classes), columns=range(self.num_classes))
-            # plt.figure(figsize = (10,10))
-            # fig_ = sns.heatmap(df_cm, annot=True, cmap='Spectral').get_figure()
-            # plt.close(fig_)
-        
-            # self.writer.add_figure("Confusion matrix", fig_, self.current_epoch)
         return loss
 
     def training_step(self, batch, batch_idx: int) -> torch.Tensor:
         return self.common_step("train", batch)
 
-    def validation_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
+    def validation_step(self, batch, batch_idx) -> torch.Tensor:
         return self.common_step("val", batch)
 
-    def test_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
+    def test_step(self, batch, batch_idx) -> torch.Tensor:
         if -1 in batch["labels"]:
             batch["labels"] = None
         return self.common_step("test", batch)
 
-    def predict_step(self, batch, batch_idx: int, dataloader_idx: int = 0) -> torch.Tensor:
-        batch["labels"] = None
+    def predict_step(self, batch, batch_idx) -> torch.Tensor:
         outputs = self.model(**batch)
         logits = outputs.logits
         return torch.argmax(logits, dim=1)
@@ -233,6 +230,7 @@ class TransformerBase(pl.LightningModule):
 
 if __name__ == '__main__':
     pl.seed_everything(parameters['seed'])
+
     #Grabs the preprocessed data from the previous step:
     preprocess_task = Task.get_task(task_name='data_split',
                                 project_name=PROJECT_NAME)
@@ -267,5 +265,25 @@ if __name__ == '__main__':
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
+    # Confusion matrix plot:
+    preds = trainer.predict(model, dm)
+
+    labels = [batch['labels'] for batch in dm.predict_dataloader()]
+    labels = torch.cat(labels)
+    preds = torch.cat(preds)
+
+    cm = ConfusionMatrix(num_classes=5, normalize='true')
+    conf_mat = cm(preds, labels)
+
+    df_cm = pd.DataFrame(conf_mat.cpu().numpy(), index = range(model.num_classes), columns=range(model.num_classes))
+    plt.figure(figsize = (10,8))
+    fig_ = sns.heatmap(df_cm, annot=True, linewidths=.5, cmap="YlGnBu", fmt='.2f').get_figure()
+    plt.close(fig_)
+
+    writer = SummaryWriter()
+    writer.add_figure("Confusion matrix", fig_, model.current_epoch)
+
     # # #Stores the trained model as an artifact (zip).
     # task.upload_artifact(checkpoint_callback.best_model_path, 'model_best_checkpoint')
+
+# %%
