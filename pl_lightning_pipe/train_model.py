@@ -5,6 +5,15 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 
+task = Task.init(project_name=PROJECT_NAME, 
+                 task_name='bert-base-uncased',
+                 task_type='training', #type: ignore 
+                )
+
+
+task.add_requirements('requirements.txt')
+
+
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from regex import P
@@ -18,7 +27,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import torch
 from torch import nn, Tensor
-from torch.utils.data import DataLoader, Dataset, TensorDataset, DataLoader, Sampler
+from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
@@ -30,6 +39,7 @@ task = Task.init(project_name=PROJECT_NAME,
                  task_name='bert-base-uncased',
                  task_type='training', #type: ignore 
                 )
+
 
 task.add_requirements('requirements.txt')
 
