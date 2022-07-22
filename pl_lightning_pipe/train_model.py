@@ -24,7 +24,7 @@ from pipe_conf import PROJECT_NAME
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 16,
-        'max_length': 128,
+        'max_length': 64,
         'lr': 2e-5,
         'num_epochs': 1,
         'stratified_sampling': True,
