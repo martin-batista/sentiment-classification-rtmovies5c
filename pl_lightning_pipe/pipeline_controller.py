@@ -1,3 +1,4 @@
+from clearml import Task
 from clearml.automation import PipelineController
 from pipe_conf import PROJECT_NAME
 
@@ -7,15 +8,15 @@ parameters = {
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
     'batch_size': 16,
-    'max_length': 128,
+    'max_length': 64,
     'lr': 2e-5,
-    'num_epochs': 10,
+    'num_epochs': 1,
     'stratified_sampling': True,
     'accelerator': 'auto',
     'devices': 'auto',
 }
 
-
+Task.add_requirements('requirements.txt')
 pipe = PipelineController(
     name = 'pl_base_model_pipeline',
     project = PROJECT_NAME,
@@ -42,24 +43,27 @@ pipe.add_step(
                         'General/validation_split': '${pipeline.validation_split}'} # type: ignore
 )
 
-model_name = 'bert-base-uncased'
-pipe.add_parameter('pre_trained_model', model_name)
+with open('models.txt', 'r') as file:
+    model_names = file.readlines()
 
-pipe.add_step(
-    name = f'{model_name}',
-    base_task_name='train_model',
-    base_task_project=PROJECT_NAME,
-    parents=['data_split'],
-    parameter_override={'General/seed': '${pipeline.seed}',
-                        'General/pre_trained_model': '${pipeline.pre_trained_model}',
-                        'General/batch_size': '${pipeline.batch_size}',
-                        'General/max_length': '${pipeline.max_length}',
-                        'General/lr': '${pipeline.lr}',
-                        'General/stratified_sampling': '${pipeline.stratified_sampling}',
-                        'General/num_epochs': '${pipeline.num_epochs}',
-                        'General/accelerator': '${pipeline.accelerator}',
-                        'General/devices': '${pipeline.devices}'} # type: ignore
-)
+for model_str in model_names:
+    pipe.add_parameter('pre_trained_model', model_str)
+
+    pipe.add_step(
+        name = f'{model_str}',
+        base_task_name='train_model',
+        base_task_project=PROJECT_NAME,
+        parents=['data_split'],
+        parameter_override={'General/seed': '${pipeline.seed}',
+                            'General/pre_trained_model': '${pipeline.pre_trained_model}',
+                            'General/batch_size': '${pipeline.batch_size}',
+                            'General/max_length': '${pipeline.max_length}',
+                            'General/lr': '${pipeline.lr}',
+                            'General/stratified_sampling': '${pipeline.stratified_sampling}',
+                            'General/num_epochs': '${pipeline.num_epochs}',
+                            'General/accelerator': '${pipeline.accelerator}',
+                            'General/devices': '${pipeline.devices}'} # type: ignore
+    )
 
 if __name__ == '__main__':
-    pipe.start_locally()
+    pipe.start()
