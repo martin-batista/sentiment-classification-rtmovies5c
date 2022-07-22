@@ -13,9 +13,6 @@ task = Task.init(project_name=PROJECT_NAME,
                  task_type='training', #type: ignore 
                 )
 
-
-task.add_requirements('requirements.txt')
-
 parameters = {
         'validation_split': 0.1,
         'seed': 42,
