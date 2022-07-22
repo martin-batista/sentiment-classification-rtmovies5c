@@ -63,7 +63,7 @@ if __name__ == '__main__':
     pl.seed_everything(0)
 
     parser = ArgumentParser()
-    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--batch_size', default=256, type=int)
     parser = pl.Trainer.add_argparse_args(parser)
     parser.set_defaults(max_epochs=3, gpus=1)
     parser = LitClassifier.add_model_specific_args(parser)
@@ -84,14 +84,14 @@ if __name__ == '__main__':
     # model
     # ------------
     model = LitClassifier(args.hidden_dim, args.learning_rate)
+    trainer = pl.Trainer(max_epochs=10, accelerator='gpu')
 
     # ------------
     # training
     # ------------
-    trainer = pl.Trainer.from_argparse_args(args)
     trainer.fit(model, train_loader, val_loader)
 
     # ------------
     # testing
     # ------------
-    trainer.test(test_loader)
+    trainer.test(model, dataloaders=test_loader)
