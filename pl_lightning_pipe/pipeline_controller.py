@@ -47,7 +47,8 @@ with open('models.txt', 'r') as file:
     model_names = file.readlines()
 
 for model_str in model_names:
-    pipe.add_parameter('pre_trained_model', model_str)
+    model_name = model_str.rstrip('\n')
+    pipe.add_parameter('pre_trained_model', model_name)
 
     pipe.add_step(
         name = f'{model_str}',
