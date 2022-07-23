@@ -200,7 +200,7 @@ class TransformerBase(pl.LightningModule):
         # Not required by all models. Only required for classification
         return {f"{mode}_{k}": metric(preds, labels) for k, metric in self.metrics.items()}
 
-    def common_step(self, prefix: str, batch) -> torch.Tensor:
+    def common_step(self, prefix: str, batch) -> Dict:
         outputs = self.model(**batch)
         loss = outputs.loss
         logits = outputs.logits
@@ -209,7 +209,7 @@ class TransformerBase(pl.LightningModule):
             metric_dict = self.compute_metrics(preds, batch["labels"], mode=prefix)
             self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
             self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
-        return loss
+        return {'loss': loss, 'preds':preds}
 
     def training_step(self, batch, batch_idx: int) -> torch.Tensor:
         return self.common_step("train", batch)
@@ -223,9 +223,8 @@ class TransformerBase(pl.LightningModule):
         return self.common_step("test", batch)
 
     def predict_step(self, batch, batch_idx) -> torch.Tensor:
-        outputs = self.model(**batch)
-        logits = outputs.logits
-        return torch.argmax(logits, dim=1)
+        step = self.common_step("predict", batch) 
+        return step['preds']
 
     def configure_optimizers(self):
       return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
