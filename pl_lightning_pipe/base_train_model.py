@@ -252,7 +252,7 @@ if __name__ == '__main__':
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                         accelerator='gpu', 
                         devices=parameters['devices'], logger=True,
-                        callbacks=[TQDMProgressBar(refresh_rate=10]))
+                        callbacks=[TQDMProgressBar(refresh_rate=10)])
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
