@@ -258,7 +258,7 @@ if __name__ == '__main__':
                         accelerator='gpu', 
                         devices=parameters['devices'], 
                         logger=True,
-                        callbacks=[TQDMProgressBar(refresh_rate=2000)])
+                        callbacks=[TQDMProgressBar(refresh_rate=300)])
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
