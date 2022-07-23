@@ -1,11 +1,9 @@
-from typing import overload
-from clearml import Dataset, Task, Logger
+from clearml import Task
 import pandas as pd
 import numpy as np
-from pathlib import Path
 import pytorch_lightning as pl
 from scipy.stats import wasserstein_distance
-from pipe_conf import PROJECT_NAME, SOURCE_DATASET
+from pipe_conf import PROJECT_NAME
 
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
