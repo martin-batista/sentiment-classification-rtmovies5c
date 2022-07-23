@@ -55,7 +55,7 @@ class TokenizeDataset(Dataset):
         if not self.eval:
             self.labels = df['label'].values
             
-        tokenizer = AutoTokenizer.from_pretrained(model_str, trust_remote_code=True, use_fast=False)
+        tokenizer = AutoTokenizer.from_pretrained(model_str, lower=True, trust_remote_code=True, use_fast=False)
         self.encode = tokenizer.batch_encode_plus(
             self.text,
             padding='max_length',
