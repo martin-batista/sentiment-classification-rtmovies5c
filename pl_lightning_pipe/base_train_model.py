@@ -7,7 +7,7 @@ import numpy as np
 import pytorch_lightning as pl
 from transformers import (
     AutoModelForSequenceClassification, # type: ignore
-    AutoTokenizer,
+    AutoTokenizer, # type: ignore
     get_constant_schedule_with_warmup, # type: ignore
     get_cosine_with_hard_restarts_schedule_with_warmup, # type: ignore
     get_linear_schedule_with_warmup # type: ignore
@@ -29,10 +29,10 @@ from pipe_conf import PROJECT_NAME
 
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 32,
-        'max_length': 512,
+        'batch_size': 16,
+        'max_length': 256,
         'lr': 2e-5,
-        'num_epochs': 4,
+        'num_epochs': 8,
         'stratified_sampling': False,
         'stratified_sampling_position': 'first',
         'stratified_epochs': 3,
