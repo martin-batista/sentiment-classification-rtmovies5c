@@ -27,8 +27,8 @@ parameters = {
         'max_length': 64,
         'lr': 2e-5,
         'num_epochs': 10,
-        'stratified_epochs': 7,
         'stratified_sampling': True,
+        'stratified_epochs': 7,
         'accelerator': 'auto',
         'devices': 'auto',
     }
