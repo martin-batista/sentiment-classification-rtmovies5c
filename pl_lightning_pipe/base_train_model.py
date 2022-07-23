@@ -108,7 +108,8 @@ class StratifiedSampler(Sampler):
 class TransformerDataModule(pl.LightningDataModule):
    
    def __init__(self, params, train_data_path, test_data_path, valid_data_path = None,
-                stratified = parameters['stratified_sampling'], num_workers=2):
+                stratified = parameters['stratified_sampling'], strat_epochs = parameters['stratified_epochs'],
+                num_workers=2):
        super().__init__()
        self.params = params
        self.train_data_path = train_data_path
@@ -117,6 +118,7 @@ class TransformerDataModule(pl.LightningDataModule):
        self.batch_size = params['batch_size']
        self.prepare_data_per_node = False
        self.stratified = stratified
+       self.strat_epochs = strat_epochs
        self.num_workers = num_workers
 
    def prepare_data(self):
@@ -136,7 +138,7 @@ class TransformerDataModule(pl.LightningDataModule):
 
    def train_dataloader(self): 
        if self.stratified:
-           if self.trainer.current_epoch <= self.params['stratified_epochs']: # type: ignore
+           if self.trainer.current_epoch <= self.strat_epochs: # type: ignore
                return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                            sampler=StratifiedSampler(self.y, self.batch_size),
                            num_workers=self.num_workers)
