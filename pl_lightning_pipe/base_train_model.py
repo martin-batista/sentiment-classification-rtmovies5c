@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 import pytorch_lightning as pl
-from transformers import AutoModelForSequenceClassification, AutoTokenizer # type: ignore
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_cosine_with_hard_restarts_schedule_with_warmup, get_linear_schedule_with_warmup # type: ignore
 
 from torch.utils.tensorboard import SummaryWriter # type: ignore
 
@@ -29,6 +29,9 @@ parameters = {
         'num_epochs': 5,
         'stratified_sampling': True,
         'stratified_epochs': 3,
+        'lr_schedule': 'warmup_linear',
+        'lr_warmup': 0.1,
+        'num_cycles': 2,
         'accelerator': 'auto',
         'devices': 'auto',
     }
@@ -175,6 +178,10 @@ class TransformerBase(pl.LightningModule):
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
         self.model_str = params['pre_trained_model']
+        self.num_epochs = params['num_epochs']
+        self.lr_schedule = params['lr_schedule']
+        self.warmup_steps = np.ceil(params['lr_warmup']*self.num_epochs)
+        self.num_cycles = params['num_cycles']
 
         self.save_hyperparameters()
         self.configure_metrics()
@@ -227,7 +234,26 @@ class TransformerBase(pl.LightningModule):
         return step['preds']
 
     def configure_optimizers(self):
-      return torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+      optimizer = torch.optim.AdamW(self.parameters(), self.learning_rate)
+      if self.lr_schedule == 'warmup_linear':
+        return {
+        "optimizer": optimizer,
+         "lr_scheduler": {
+             "scheduler": get_linear_schedule_with_warmup(optimizer, self.warmup_steps, self.num_epochs),
+              "monitor": "train_loss"
+          },
+      }
+      elif self.lr_schedule == 'warmup_cosine_restarts':
+        return {
+        "optimizer": optimizer,
+         "lr_scheduler": {
+             "scheduler": get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, self.warmup_steps, 
+                                                                             self.num_epochs, self.num_cycles),
+              "monitor": "train_loss"
+          },
+      }
+      else:
+        return optimizer
 
 
 if __name__ == '__main__':
