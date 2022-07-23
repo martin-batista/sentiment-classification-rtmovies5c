@@ -18,7 +18,7 @@ parameters = {
 
 Task.add_requirements('requirements.txt')
 pipe = PipelineController(
-    name = 'pl_base_model_pipeline',
+    name = 'pl_train_models_pipeline',
     project = PROJECT_NAME,
     version = '0.1'
 )
