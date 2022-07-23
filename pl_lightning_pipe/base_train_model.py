@@ -293,7 +293,10 @@ if __name__ == '__main__':
     Path('../data/interim').mkdir(parents=True, exist_ok=True)
     train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
     test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
-    valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
+    try:
+        valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
+    except:
+        valid_data_path = None
 
     # # #Defines training callbacks.
     model_name = parameters['pre_trained_model']
