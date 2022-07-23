@@ -266,6 +266,9 @@ if __name__ == '__main__':
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
 
+    #Test the model.
+    trainer.test(model, dm)
+
     # Confusion matrix plot:
     preds = trainer.predict(model, dm)
 
