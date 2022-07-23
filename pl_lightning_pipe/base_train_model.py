@@ -29,14 +29,14 @@ from pipe_conf import PROJECT_NAME
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 32,
-        'max_length': 128,
+        'max_length': 512,
         'lr': 2e-5,
-        'num_epochs': 5,
-        'stratified_sampling': True,
+        'num_epochs': 4,
+        'stratified_sampling': False,
         'stratified_sampling_position': 'first',
         'stratified_epochs': 3,
         'lr_schedule': 'warmup_linear', # warmup_linear, warmup_cosine_restarts
-        'lr_warmup': 0.2,
+        'lr_warmup': 0.5,
         'num_cycles': 2,
         'accelerator': 'auto',
         'devices': 'auto',
