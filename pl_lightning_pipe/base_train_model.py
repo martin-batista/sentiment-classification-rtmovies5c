@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 
 import pytorch_lightning as pl
-from regex import P
 from transformers import AutoModelForSequenceClassification, AutoTokenizer # type: ignore
 
 from torch.utils.tensorboard import SummaryWriter # type: ignore
@@ -27,7 +26,7 @@ parameters = {
         'max_length': 64,
         'lr': 2e-5,
         'num_epochs': 2,
-        'stratified_sampling': True,
+        'stratified_sampling': False,
         'stratified_epochs': 1,
         'accelerator': 'auto',
         'devices': 'auto',
@@ -272,6 +271,6 @@ if __name__ == '__main__':
     fig_ = sns.heatmap(df_cm, annot=True, linewidths=.5, cmap="YlGnBu", fmt='.2f').get_figure()  # type: ignore
     plt.close(fig_)
 
-    writer = SummaryWriter()
-    writer.add_figure("Confusion matrix", fig_, model.current_epoch)
+    # writer = SummaryWriter()
+    # writer.add_figure("Confusion matrix", fig_, model.current_epoch)
     task.get_logger().report_matplotlib_figure("Confusion matrix", "Validation data", fig_)
