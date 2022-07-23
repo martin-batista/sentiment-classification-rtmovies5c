@@ -27,6 +27,7 @@ parameters = {
         'max_length': 64,
         'lr': 2e-5,
         'num_epochs': 10,
+        'stratified_epochs': 7,
         'stratified_sampling': True,
         'accelerator': 'auto',
         'devices': 'auto',
@@ -246,12 +247,24 @@ if __name__ == '__main__':
     model_name = parameters['pre_trained_model']
 
     # #Trains the model.
-    dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
     model = TransformerBase(params=parameters)
+    stratified_epochs = parameters['stratified_epochs'] 
+    
+    if stratified_epochs > 0: 
+        dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
+        trainer = pl.Trainer(max_epochs=stratified_epochs, 
+                            accelerator='gpu', 
+                            devices=parameters['devices'], logger=True)
 
-    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
-                         accelerator='gpu', 
-                         devices=parameters['devices'], logger=True)
+        trainer.fit(model, dm)
+        trainer.save_checkpoint(f"{model_name}-stratified.ckpt")
+    
+    num_epochs = parameters['num_epochs'] 
+    # Non stratified epochs 
+    dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
+    trainer = pl.Trainer(max_epochs=num_epochs - stratified_epochs, 
+                        accelerator='gpu', 
+                        devices=parameters['devices'], logger=True)
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
