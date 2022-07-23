@@ -50,10 +50,9 @@ with open('models.txt', 'r') as file:
 for model_name in model_names:
 
     pipe.add_parameter('pre_trained_model', model_name)
-
     pipe.add_step(
         name = f'{model_name}',
-        base_task_name='train_model',
+        base_task_name='base_train_model',
         base_task_project=PROJECT_NAME,
         parents=['data_split'],
         parameter_override={'General/seed': '${pipeline.seed}',

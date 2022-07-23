@@ -26,7 +26,7 @@ parameters = {
         'batch_size': 16,
         'max_length': 64,
         'lr': 2e-5,
-        'num_epochs': 10,
+        'num_epochs': 1,
         'stratified_sampling': True,
         'stratified_epochs': 7,
         'accelerator': 'auto',
@@ -36,12 +36,12 @@ parameters = {
 
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
-                 task_name='train_model',
+                 task_name='base_train_model',
                  task_type='training', #type: ignore 
                 )
 
 task.connect(parameters)
-task.execute_remotely('default')
+task.execute_remotely('GPU')
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
