@@ -3,7 +3,7 @@ from clearml.automation import PipelineController
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-    'validation_split': 0.1,
+    'validation_split': 0.2,
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
     'batch_size': 16,
