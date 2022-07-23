@@ -11,7 +11,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer # typ
 from torch.utils.tensorboard import SummaryWriter # type: ignore
 
 import torch
-from torch import nn, Tensor
+from pytorch_lightning.callbacks import TQDMProgressBar
 from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
@@ -33,6 +33,7 @@ parameters = {
         'devices': 'auto',
     }
 
+assert parameters['num_epochs'] >= parameters['stratified_epochs']
 
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
@@ -136,13 +137,13 @@ class TransformerDataModule(pl.LightningDataModule):
                                                   self.params['pre_trained_model'])
 
    def train_dataloader(self): 
-        if self.stratified:
-            return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
-                              sampler=StratifiedSampler(self.y, self.batch_size),
-                              num_workers=self.num_workers)
-        else:
-            return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
-                              num_workers=self.num_workers)
+       if self.stratified and self.trainer.current_epoch <= self.params['stratified_epochs']: # type: ignore
+           return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                           sampler=StratifiedSampler(self.y, self.batch_size),
+                           num_workers=self.num_workers)
+       else:    
+        return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                             num_workers=self.num_workers)
     
    def val_dataloader(self):
       return DataLoader(self.valid_tokenized, batch_size=self.batch_size, 
@@ -245,23 +246,12 @@ if __name__ == '__main__':
 
     # #Trains the model.
     model = TransformerBase(params=parameters)
-    stratified_epochs = parameters['stratified_epochs'] 
     
-    if stratified_epochs > 0: 
-        dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
-        trainer = pl.Trainer(max_epochs=stratified_epochs, 
-                            accelerator='gpu', 
-                            devices=parameters['devices'], logger=True)
-
-        trainer.fit(model, dm)
-        trainer.save_checkpoint(f"{model_name}-stratified.ckpt")
-    
-    # Non stratified epochs 
-    num_epochs = parameters['num_epochs'] 
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
-    trainer = pl.Trainer(max_epochs=num_epochs - stratified_epochs, 
+    trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                         accelerator='gpu', 
-                        devices=parameters['devices'], logger=True)
+                        devices=parameters['devices'], logger=True,
+                        callbacks=[TQDMProgressBar(refresh_rate=1000)])
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
