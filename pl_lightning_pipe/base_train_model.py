@@ -34,8 +34,8 @@ parameters = {
         'num_epochs': 5,
         'stratified_sampling': True,
         'stratified_epochs': 3,
-        'lr_schedule': 'warmup_linear',
-        'lr_warmup': 0.1,
+        'lr_schedule': 'warmup_linear', # warmup_linear, warmup_cosine_restarts
+        'lr_warmup': 0.2,
         'num_cycles': 2,
         'accelerator': 'auto',
         'devices': 'auto',
