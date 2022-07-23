@@ -26,7 +26,7 @@ parameters = {
         'max_length': 64,
         'lr': 2e-5,
         'num_epochs': 2,
-        'stratified_sampling': False,
+        'stratified_sampling': True,
         'stratified_epochs': 1,
         'accelerator': 'auto',
         'devices': 'auto',
@@ -135,8 +135,9 @@ class TransformerDataModule(pl.LightningDataModule):
                                                   self.params['pre_trained_model'])
 
    def train_dataloader(self): 
-       if self.stratified and self.trainer.current_epoch <= self.params['stratified_epochs']: # type: ignore
-           return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+       if self.stratified:
+           if self.trainer.current_epoch <= self.params['stratified_epochs']: # type: ignore
+               return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                            sampler=StratifiedSampler(self.y, self.batch_size),
                            num_workers=self.num_workers)
        else:    
