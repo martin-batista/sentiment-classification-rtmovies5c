@@ -33,10 +33,15 @@ parameters = {
     }
 
 
+labels = []
+if parameters['stratified_sampling']: labels.append('Stratified')
+if parameters['num_epochs'] > parameters['stratified_epochs']: labels.append('Random')
+
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
-                 task_name='base_train_model',
+                 task_name='train_model',
                  task_type='training', #type: ignore 
+                 tags=labels
                 )
 
 task.connect(parameters)
