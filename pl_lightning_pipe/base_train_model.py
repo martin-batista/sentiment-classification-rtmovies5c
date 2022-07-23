@@ -7,7 +7,8 @@ import numpy as np
 import pytorch_lightning as pl
 from transformers import (
     AutoModelForSequenceClassification, # type: ignore
-    AutoTokenizer, # type: ignore
+    AutoTokenizer,
+    get_constant_schedule_with_warmup, # type: ignore
     get_cosine_with_hard_restarts_schedule_with_warmup, # type: ignore
     get_linear_schedule_with_warmup # type: ignore
 ) 
@@ -35,7 +36,7 @@ parameters = {
         'stratified_sampling': False,
         'stratified_sampling_position': 'first',
         'stratified_epochs': 3,
-        'lr_schedule': 'warmup_linear', # warmup_linear, warmup_cosine_restarts
+        'lr_schedule': 'warmup_linear', # warmup_linear, warmup_constant, warmup_cosine_restarts
         'lr_warmup': 0.5,
         'num_cycles': 2,
         'accelerator': 'auto',
@@ -263,6 +264,14 @@ class TransformerBase(pl.LightningModule):
          "lr_scheduler": {
              "scheduler": get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, self.warmup_steps, 
                                                                              self.num_epochs, self.num_cycles),
+              "monitor": "train_loss"
+          },
+      }
+      elif self.lr_schedule == 'warmup_constant':
+        return {
+        "optimizer": optimizer,
+         "lr_scheduler": {
+             "scheduler": get_constant_schedule_with_warmup(optimizer, self.warmup_steps),
               "monitor": "train_loss"
           },
       }
