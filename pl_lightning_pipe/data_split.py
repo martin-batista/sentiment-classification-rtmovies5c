@@ -17,7 +17,7 @@ parameters = {
 }
 
 task.connect(parameters)
-task.execute_remotely('GPU')
+task.execute_remotely('default')
 
 def get_train_test_data(task_id):
     dataset_task = Task.get_task(task_id)
