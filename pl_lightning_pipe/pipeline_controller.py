@@ -3,7 +3,7 @@ from clearml.automation import PipelineController
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-    'validation_split': 0.2,
+    'validation_split': 0.1,
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
     'batch_size': 16,
@@ -12,6 +12,9 @@ parameters = {
     'num_epochs': 10,
     'stratified_sampling': True,
     'stratified_epochs': 7,
+    'lr_schedule': 'warmup_linear', # warmup_linear, warmup_constant, warmup_cosine_restarts
+    'lr_warmup': 0.5,
+    'num_cycles': 2,
     'accelerator': 'auto',
     'devices': 'auto',
 }
@@ -33,6 +36,9 @@ pipe.add_parameter('lr', parameters['lr'])
 pipe.add_parameter('num_epochs', parameters['num_epochs'])
 pipe.add_parameter('stratified_sampling', parameters['stratified_sampling'])
 pipe.add_parameter('stratified_epochs', parameters['stratified_epochs'])
+pipe.add_parameter('lr_schedule', parameters['lr_schedule'])
+pipe.add_parameter('lr_warmup', parameters['lr_warmup'])
+pipe.add_parameter('num_cycles', parameters['num_cycles'])
 pipe.add_parameter('accelerator', parameters['accelerator'])
 pipe.add_parameter('devices', parameters['devices'])
 
@@ -47,25 +53,29 @@ pipe.add_step(
 with open('models.txt', 'r') as file:
     model_names = file.read().splitlines()
 
-for model_name in model_names:
+# for model_name in model_names:
 
-    pipe.add_parameter('pre_trained_model', model_name)
-    pipe.add_step(
-        name = f'{model_name}',
-        base_task_name='base_train_model',
-        base_task_project=PROJECT_NAME,
-        parents=['data_split'],
-        parameter_override={'General/seed': '${pipeline.seed}',
-                            'General/pre_trained_model': '${pipeline.pre_trained_model}',
-                            'General/batch_size': '${pipeline.batch_size}',
-                            'General/max_length': '${pipeline.max_length}',
-                            'General/lr': '${pipeline.lr}',
-                            'General/stratified_sampling': '${pipeline.stratified_sampling}',
-                            'General/stratified_epochs': '${pipeline.stratified_epochs}',
-                            'General/num_epochs': '${pipeline.num_epochs}',
-                            'General/accelerator': '${pipeline.accelerator}',
-                            'General/devices': '${pipeline.devices}'} # type: ignore
-    )
+model_name = 'bert-base-uncased'
+pipe.add_parameter('pre_trained_model', model_name)
+pipe.add_step(
+    name = f'{model_name}',
+    base_task_name='base_train_model',
+    base_task_project=PROJECT_NAME,
+    parents=['data_split'],
+    parameter_override={'General/seed': '${pipeline.seed}',
+                        'General/pre_trained_model': '${pipeline.pre_trained_model}',
+                        'General/batch_size': '${pipeline.batch_size}',
+                        'General/max_length': '${pipeline.max_length}',
+                        'General/lr': '${pipeline.lr}',
+                        'General/stratified_sampling': '${pipeline.stratified_sampling}',
+                        'General/stratified_epochs': '${pipeline.stratified_epochs}',
+                        'General/lr_schedule': '${pipeline.lr_schedule}',
+                        'General/lr_warmup': '${pipeline.lr_warmup}',
+                        'General/num_cycles': '${pipeline.num_cycles}',
+                        'General/num_epochs': '${pipeline.num_epochs}',
+                        'General/accelerator': '${pipeline.accelerator}',
+                        'General/devices': '${pipeline.devices}'} # type: ignore
+)
 
 if __name__ == '__main__':
     pipe.start()
