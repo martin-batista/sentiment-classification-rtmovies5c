@@ -5,7 +5,12 @@ import pandas as pd
 import numpy as np
 
 import pytorch_lightning as pl
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_cosine_with_hard_restarts_schedule_with_warmup, get_linear_schedule_with_warmup # type: ignore
+from transformers import (
+    AutoModelForSequenceClassification, # type: ignore
+    AutoTokenizer, # type: ignore
+    get_cosine_with_hard_restarts_schedule_with_warmup, # type: ignore
+    get_linear_schedule_with_warmup # type: ignore
+) 
 
 from torch.utils.tensorboard import SummaryWriter # type: ignore
 
@@ -15,7 +20,7 @@ from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import TQDMProgressBar
+from pytorch_lightning.callbacks import TQDMProgressBar # type: ignore
 from transformers import  AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
