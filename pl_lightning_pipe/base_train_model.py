@@ -33,7 +33,6 @@ parameters = {
         'devices': 'auto',
     }
 
-assert parameters['num_epochs'] >= parameters['stratified_epochs']
 
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
@@ -43,6 +42,8 @@ task = Task.init(project_name=PROJECT_NAME,
 
 task.connect(parameters)
 task.execute_remotely('GPU')
+
+assert parameters['num_epochs'] >= parameters['stratified_epochs']
 
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
