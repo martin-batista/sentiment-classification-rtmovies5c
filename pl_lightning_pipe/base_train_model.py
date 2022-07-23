@@ -11,6 +11,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer # typ
 from torch.utils.tensorboard import SummaryWriter # type: ignore
 
 import torch
+from torch import nn
 from pytorch_lightning.callbacks import TQDMProgressBar
 from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
