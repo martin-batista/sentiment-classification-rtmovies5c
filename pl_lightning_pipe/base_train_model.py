@@ -26,9 +26,9 @@ parameters = {
         'batch_size': 128,
         'max_length': 64,
         'lr': 2e-5,
-        'num_epochs': 3,
-        'stratified_sampling': False,
-        'stratified_epochs': 0,
+        'num_epochs': 5,
+        'stratified_sampling': True,
+        'stratified_epochs': 3,
         'accelerator': 'auto',
         'devices': 'auto',
     }
