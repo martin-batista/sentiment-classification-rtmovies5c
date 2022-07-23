@@ -33,6 +33,7 @@ parameters = {
         'lr': 2e-5,
         'num_epochs': 5,
         'stratified_sampling': True,
+        'stratified_sampling_position': 'first',
         'stratified_epochs': 3,
         'lr_schedule': 'warmup_linear', # warmup_linear, warmup_cosine_restarts
         'lr_warmup': 0.2,
@@ -129,10 +130,12 @@ class TransformerDataModule(pl.LightningDataModule):
        self.train_data_path = train_data_path
        self.test_data_path = test_data_path
        self.valid_data_path = valid_data_path
+       self.num_epochs = self.params['num_epochs']
        self.batch_size = params['batch_size']
        self.prepare_data_per_node = False
        self.stratified = stratified
        self.strat_epochs = strat_epochs
+       self.strat_pos = params['stratified_sampling_position']
        self.num_workers = num_workers
 
    def prepare_data(self):
@@ -151,14 +154,19 @@ class TransformerDataModule(pl.LightningDataModule):
                                                   self.params['pre_trained_model'])
 
    def train_dataloader(self): 
-       if not self.stratified:
-           return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+       if self.stratified and self.strat_pos == 'last':
+            if self.trainer.current_epoch < (self.num_epochs - self.strat_epochs):  # type: ignore
+                return DataLoader(self.train_tokenized, batch_size=self.batch_size, num_workers=self.num_workers)
+
+       elif self.stratified and self.strat_pos == 'first':
+            if self.trainer.current_epoch <= self.strat_epochs: # type: ignore
+                return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                                  sampler=StratifiedSampler(self.y, self.batch_size),
+                                  num_workers=self.num_workers)
+
+       return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                 num_workers=self.num_workers)
-       if self.trainer.current_epoch <= self.strat_epochs: # type: ignore
-           return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
-                       sampler=StratifiedSampler(self.y, self.batch_size),
-                       num_workers=self.num_workers)
-    
+   
    def val_dataloader(self):
       return DataLoader(self.valid_tokenized, batch_size=self.batch_size, 
                         num_workers=self.num_workers)
