@@ -23,8 +23,8 @@ from pipe_conf import PROJECT_NAME
 
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 128,
-        'max_length': 64,
+        'batch_size': 32,
+        'max_length': 128,
         'lr': 2e-5,
         'num_epochs': 5,
         'stratified_sampling': True,
