@@ -32,7 +32,7 @@ pipe.add_parameter('max_length', parameters['max_length'])
 pipe.add_parameter('lr', parameters['lr'])
 pipe.add_parameter('num_epochs', parameters['num_epochs'])
 pipe.add_parameter('stratified_sampling', parameters['stratified_sampling'])
-pipe.add_parameter('stratified_sampling', parameters['stratified_epochs'])
+pipe.add_parameter('stratified_epochs', parameters['stratified_epochs'])
 pipe.add_parameter('accelerator', parameters['accelerator'])
 pipe.add_parameter('devices', parameters['devices'])
 
