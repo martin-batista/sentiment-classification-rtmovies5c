@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import TQDMProgressBar
 from transformers import  AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -39,7 +40,7 @@ if parameters['num_epochs'] > parameters['stratified_epochs']: labels.append('Ra
 
 Task.add_requirements('requirements.txt')
 task = Task.init(project_name=PROJECT_NAME, 
-                 task_name='train_model',
+                 task_name=parameters['pre_trained_model'],
                  task_type='training', #type: ignore 
                  tags=labels
                 )
@@ -255,7 +256,9 @@ if __name__ == '__main__':
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                         accelerator='gpu', 
-                        devices=parameters['devices'], logger=True)
+                        devices=parameters['devices'], 
+                        logger=True,
+                        callbacks=[TQDMProgressBar(refresh_rate=2000)])
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
