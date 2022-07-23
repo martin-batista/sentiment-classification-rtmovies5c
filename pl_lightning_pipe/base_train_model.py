@@ -251,8 +251,7 @@ if __name__ == '__main__':
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                         accelerator='gpu', 
-                        devices=parameters['devices'], logger=True,
-                        callbacks=[TQDMProgressBar(refresh_rate=10)])
+                        devices=parameters['devices'], logger=True)
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
