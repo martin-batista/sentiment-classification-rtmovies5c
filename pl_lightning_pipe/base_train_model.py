@@ -43,8 +43,6 @@ task = Task.init(project_name=PROJECT_NAME,
 task.connect(parameters)
 task.execute_remotely('GPU')
 
-assert parameters['num_epochs'] >= parameters['stratified_epochs']
-
 class TokenizeDataset(Dataset):
     def __init__(self, df, max_len, model_str, eval=False):
         self.max_len = max_len
