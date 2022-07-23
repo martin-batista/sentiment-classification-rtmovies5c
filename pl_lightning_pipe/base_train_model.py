@@ -22,12 +22,12 @@ from pipe_conf import PROJECT_NAME
 
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 16,
+        'batch_size': 128,
         'max_length': 64,
         'lr': 2e-5,
-        'num_epochs': 10,
-        'stratified_sampling': True,
-        'stratified_epochs': 7,
+        'num_epochs': 3,
+        'stratified_sampling': False,
+        'stratified_epochs': 0,
         'accelerator': 'auto',
         'devices': 'auto',
     }
