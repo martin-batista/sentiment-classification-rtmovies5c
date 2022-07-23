@@ -230,15 +230,12 @@ if __name__ == '__main__':
     preprocess_task = Task.get_task(task_name='data_split',
                                     project_name=PROJECT_NAME)
 
-
     pre_conf = preprocess_task.get_parameters_as_dict(cast=True)
     task.connect(pre_conf['General'])
 
     pl.seed_everything(task.get_parameter('General/seed')) # type: ignore
 
-    Path('data/interim').mkdir(parents=True, exist_ok=True)
-
-
+    Path('../data/interim').mkdir(parents=True, exist_ok=True)
     train_data_path = preprocess_task.artifacts['train_data'].get_local_copy()
     test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
     valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
@@ -259,8 +256,8 @@ if __name__ == '__main__':
         trainer.fit(model, dm)
         trainer.save_checkpoint(f"{model_name}-stratified.ckpt")
     
-    num_epochs = parameters['num_epochs'] 
     # Non stratified epochs 
+    num_epochs = parameters['num_epochs'] 
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
     trainer = pl.Trainer(max_epochs=num_epochs - stratified_epochs, 
                         accelerator='gpu', 
