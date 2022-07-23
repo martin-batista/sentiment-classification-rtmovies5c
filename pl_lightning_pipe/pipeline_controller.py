@@ -16,9 +16,6 @@ parameters = {
     'devices': 'auto',
 }
 
-with open('models.txt', 'r') as file:
-    model_names = file.readlines()
-
 Task.add_requirements('requirements.txt')
 pipe = PipelineController(
     name = 'pl_base_model_pipeline',
@@ -46,7 +43,8 @@ pipe.add_step(
                         'General/validation_split': '${pipeline.validation_split}'} # type: ignore
 )
 
-
+with open('models.txt', 'r') as file:
+    model_names = file.readlines()
 
 for model_str in model_names:
     pipe.add_parameter('pre_trained_model', model_str)
@@ -68,4 +66,4 @@ for model_str in model_names:
     )
 
 if __name__ == '__main__':
-    pipe.start_locally()
+    pipe.start()
