@@ -268,7 +268,7 @@ class TransformerBase(pl.LightningModule):
              "monitor": "train_loss",
              "name": 'warmup_linear',
           },
-        return [optimizer], [lr_scheduler]
+        return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler} 
 
       elif self.lr_schedule == 'warmup_cosine_restarts':
         lr_scheduler ={
@@ -276,7 +276,7 @@ class TransformerBase(pl.LightningModule):
              "monitor": "train_loss",
              "name": 'warmup_cosine_restarts',
           },
-        return [optimizer], [lr_scheduler]
+        return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler}
 
       elif self.lr_schedule == 'warmup_constant':
         lr_scheduler ={
@@ -284,7 +284,7 @@ class TransformerBase(pl.LightningModule):
              "monitor": "train_loss",
              "name": 'warmup_constant',
           },
-        return [optimizer], [lr_scheduler]
+        return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler}
 
       else:
         return optimizer
