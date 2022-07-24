@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import TQDMProgressBar # type: ignore
+from pytorch_lightning.callbacks import TQDMProgressBar, LearningRateMonitor # type: ignore
 from transformers import  AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -307,7 +307,7 @@ if __name__ == '__main__':
     test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
     try:
         valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
-    except:
+    except Exception("No validation data found."):
         valid_data_path = None
 
     # # #Defines training callbacks.
@@ -315,13 +315,14 @@ if __name__ == '__main__':
 
     # #Trains the model.
     model = TransformerBase(params=parameters)
-    
+
     dm = TransformerDataModule(parameters, train_data_path, test_data_path, valid_data_path)
     trainer = pl.Trainer(max_epochs=parameters['num_epochs'], 
                         accelerator='gpu', 
                         devices=parameters['devices'], 
                         logger=True,
-                        callbacks=[TQDMProgressBar(refresh_rate=300)])
+                        callbacks=[TQDMProgressBar(refresh_rate=300),
+                                   LearningRateMonitor(logging_interval='epoch', log_momentum=True)])
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
