@@ -30,16 +30,16 @@ from pipe_conf import PROJECT_NAME
 
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 64,
-        'max_length': 8,
+        'batch_size': 16,
+        'max_length': 256,
         'lr': 2e-5,
-        'num_epochs': 1,
-        'stratified_sampling': False,
+        'num_epochs': 5,
+        'stratified_sampling': True,
         'stratified_sampling_position': 'first',
-        'stratified_epochs': 3,
-        'lr_schedule': 'warmup_linear', # warmup_linear, warmup_constant, warmup_cosine_restarts
+        'stratified_epochs': 5,
+        'lr_schedule': 'warmup_cosine_restarts', # warmup_linear, warmup_constant, warmup_cosine_restarts
         'lr_warmup': 0.5,
-        'num_cycles': 2,
+        'num_cycles': 3,
         'accelerator': 'auto',
         'devices': 'auto',
     }
