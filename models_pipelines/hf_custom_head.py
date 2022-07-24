@@ -33,13 +33,13 @@ parameters = {
         'batch_size': 16,
         'max_length': 256,
         'lr': 2e-5,
-        'num_epochs': 5,
+        'num_epochs': 8,
         'stratified_sampling': True,
         'stratified_sampling_position': 'first',
-        'stratified_epochs': 5,
+        'stratified_epochs': 4,
         'lr_schedule': 'warmup_cosine_restarts', # warmup_linear, warmup_constant, warmup_cosine_restarts
-        'lr_warmup': 0.5,
-        'num_cycles': 3,
+        'lr_warmup': 0.1,
+        'num_cycles': 4,
         'accelerator': 'auto',
         'devices': 'auto',
     }
