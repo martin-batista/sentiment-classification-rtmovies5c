@@ -356,6 +356,4 @@ if __name__ == '__main__':
     fig_ = sns.heatmap(df_cm, annot=True, linewidths=.5, cmap="YlGnBu", fmt='.2f').get_figure()  # type: ignore
     plt.close(fig_)
 
-    # writer = SummaryWriter()
-    # writer.add_figure("Confusion matrix", fig_, model.current_epoch)
     task.get_logger().report_matplotlib_figure("Confusion matrix", "Validation data", fig_)
