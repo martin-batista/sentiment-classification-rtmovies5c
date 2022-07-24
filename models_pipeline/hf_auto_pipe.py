@@ -45,9 +45,12 @@ pipe.add_parameter('devices', parameters['devices'])
 with open('models.txt', 'r') as file:
     model_names = file.read().splitlines()
 
+training_nodes = []
 # for model_name in model_names:
 
 model_name = 'bert-base-uncased'
+training_nodes.append(model_name)
+
 pipe.add_parameter('pre_trained_model', model_name)
 pipe.add_step(
     name = f'{model_name}',
@@ -66,8 +69,20 @@ pipe.add_step(
                         'General/num_cycles': '${pipeline.num_cycles}',
                         'General/num_epochs': '${pipeline.num_epochs}',
                         'General/accelerator': '${pipeline.accelerator}',
-                        'General/devices': '${pipeline.devices}'} # type: ignore
+                        'General/devices': '${pipeline.devices}'
+    }
 )
+
+def find_k_best(k):
+    pass
+
+
+pipe.add_function_step(
+   name='select_top_models',
+   parents=training_nodes,
+   function=find_k_best,
+)
+
 
 if __name__ == '__main__':
     pipe.start()

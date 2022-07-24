@@ -8,7 +8,6 @@ import numpy as np
 import pytorch_lightning as pl
 from transformers import (
     AutoModel, #type: ignore
-    AutoModelForSequenceClassification, # type: ignore
     AutoTokenizer, # type: ignore
     get_constant_schedule_with_warmup, # type: ignore
     get_cosine_with_hard_restarts_schedule_with_warmup, # type: ignore
@@ -32,7 +31,7 @@ from pipe_conf import PROJECT_NAME
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
         'batch_size': 64,
-        'max_length': 256,
+        'max_length': 8,
         'lr': 2e-5,
         'num_epochs': 1,
         'stratified_sampling': False,
@@ -46,7 +45,7 @@ parameters = {
     }
 
 
-labels = []
+labels = ['Debug']
 if parameters['stratified_sampling']: labels.append('Stratified')
 if parameters['num_epochs'] > parameters['stratified_epochs']: labels.append('Random')
 
@@ -238,8 +237,8 @@ class TransformerBase(pl.LightningModule):
 
     def common_step(self, prefix: str, batch) -> torch.Tensor:
         outputs = self.model(**batch)
-        loss = outputs.loss
-        preds = outputs.preds
+        loss = outputs.loss # type: ignore
+        preds = outputs.preds # type: ignore
         if batch["labels"] is not None:
             metric_dict = self.compute_metrics(preds, batch["labels"], mode=prefix)
             self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
@@ -259,7 +258,7 @@ class TransformerBase(pl.LightningModule):
 
     def predict_step(self, batch, batch_idx) -> torch.Tensor:
         outputs = self.model(**batch)
-        return outputs.preds
+        return outputs.preds # type: ignore
 
     def configure_optimizers(self):
       optimizer = torch.optim.AdamW(self.parameters(), self.learning_rate)
@@ -332,7 +331,8 @@ if __name__ == '__main__':
 
     # Confusion matrix plot:
     outputs = trainer.predict(model, dm)
-    preds = [out.preds for out in outputs] # type: ignore
+    print(outputs)
+    # preds = [out.preds for out in outputs] # type: ignore
 
     labels = [batch['labels'] for batch in dm.predict_dataloader()]
     labels = torch.cat(labels)
