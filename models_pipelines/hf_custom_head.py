@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import TQDMProgressBar, LearningRateMonitor, ModelCheckpoint# type: ignore
+from pytorch_lightning.callbacks import TQDMProgressBar, LearningRateMonitor, ModelCheckpoint, EarlyStopping # type: ignore
 from transformers import  AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -330,6 +330,7 @@ if __name__ == '__main__':
                         logger=True,
                         callbacks=[TQDMProgressBar(refresh_rate=300),
                                    LearningRateMonitor(logging_interval='epoch', log_momentum=True),
+                                   EarlyStopping(monitor="val_accuracy", mode="max", patience=2),
                                    checkpoint_callback])
 
     trainer.fit(model, dm)
