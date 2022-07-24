@@ -263,30 +263,29 @@ class TransformerBase(pl.LightningModule):
     def configure_optimizers(self):
       optimizer = torch.optim.AdamW(self.parameters(), self.learning_rate)
       if self.lr_schedule == 'warmup_linear':
-        return {
-        "optimizer": optimizer,
-         "lr_scheduler": {
+        lr_scheduler ={
              "scheduler": get_linear_schedule_with_warmup(optimizer, self.warmup_steps, self.num_epochs),
-              "monitor": "train_loss"
+             "monitor": "train_loss",
+             "name": 'warmup_linear',
           },
-      }
+        return [optimizer], [lr_scheduler]
+
       elif self.lr_schedule == 'warmup_cosine_restarts':
-        return {
-        "optimizer": optimizer,
-         "lr_scheduler": {
-             "scheduler": get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, self.warmup_steps, 
-                                                                             self.num_epochs, self.num_cycles),
-              "monitor": "train_loss"
+        lr_scheduler ={
+             "scheduler": get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, self.warmup_steps, self.num_epochs),
+             "monitor": "train_loss",
+             "name": 'warmup_cosine_restarts',
           },
-      }
+        return [optimizer], [lr_scheduler]
+
       elif self.lr_schedule == 'warmup_constant':
-        return {
-        "optimizer": optimizer,
-         "lr_scheduler": {
-             "scheduler": get_constant_schedule_with_warmup(optimizer, self.warmup_steps),
-              "monitor": "train_loss"
+        lr_scheduler ={
+             "scheduler": get_constant_schedule_with_warmup(optimizer, self.warmup_steps, self.num_epochs),
+             "monitor": "train_loss",
+             "name": 'warmup_constant',
           },
-      }
+        return [optimizer], [lr_scheduler]
+
       else:
         return optimizer
 
