@@ -7,7 +7,7 @@ import numpy as np
 
 import pytorch_lightning as pl
 from transformers import (
-    AutoModel,
+    AutoModel, #type: ignore
     AutoModelForSequenceClassification, # type: ignore
     AutoTokenizer, # type: ignore
     get_constant_schedule_with_warmup, # type: ignore
