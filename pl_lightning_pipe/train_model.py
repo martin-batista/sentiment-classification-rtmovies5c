@@ -216,8 +216,8 @@ class TransformerBase(pl.LightningModule):
         else:
             self.hidden_dim = hidden_dim
     
-    def model(self, input_ids, attention_mask, token_type_ids, labels=None):
-        outputs = self.backbone(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+    def model(self, input_ids, attention_mask, labels=None):
+        outputs = self.backbone(input_ids=input_ids, attention_mask=attention_mask)
         preds = self.classifier(outputs.pooler_output)
         loss = self.loss(preds, labels)
         results = namedtuple('ModelOutputs', ['loss', 'preds'])
