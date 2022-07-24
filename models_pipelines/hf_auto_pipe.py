@@ -73,16 +73,5 @@ pipe.add_step(
     }
 )
 
-def find_k_best(k):
-    pass
-
-
-pipe.add_function_step(
-   name='select_top_models',
-   parents=training_nodes,
-   function=find_k_best,
-)
-
-
 if __name__ == '__main__':
     pipe.start()
