@@ -314,6 +314,7 @@ if __name__ == '__main__':
     checkpoint_callback = ModelCheckpoint(
     dirpath='../data/models/train_callbacks',
     save_top_k=2,
+    monitor='val_loss',
     mode='min',
     save_weights_only=True,
     filename='{epoch}-{val_loss:.2f}'
