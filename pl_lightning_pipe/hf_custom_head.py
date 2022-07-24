@@ -34,7 +34,7 @@ parameters = {
         'batch_size': 64,
         'max_length': 256,
         'lr': 2e-5,
-        'num_epochs': 8,
+        'num_epochs': 1,
         'stratified_sampling': False,
         'stratified_sampling_position': 'first',
         'stratified_epochs': 3,
