@@ -307,7 +307,7 @@ if __name__ == '__main__':
     test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
     try:
         valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
-    except Exception("No validation data found."):
+    except Exception:
         valid_data_path = None
 
     # # #Defines training callbacks.
