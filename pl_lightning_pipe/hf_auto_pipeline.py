@@ -42,14 +42,6 @@ pipe.add_parameter('num_cycles', parameters['num_cycles'])
 pipe.add_parameter('accelerator', parameters['accelerator'])
 pipe.add_parameter('devices', parameters['devices'])
 
-pipe.add_step(
-    name = 'data_split',
-    base_task_name='data_split',
-    base_task_project=PROJECT_NAME,
-    parameter_override={'General/seed': '${pipeline.seed}',
-                        'General/validation_split': '${pipeline.validation_split}'} # type: ignore
-)
-
 with open('models.txt', 'r') as file:
     model_names = file.read().splitlines()
 
