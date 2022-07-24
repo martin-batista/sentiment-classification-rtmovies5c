@@ -1,0 +1,11 @@
+bert-base-uncased
+bert-lare-uncased
+roberta-base
+roberta-large
+Unso/roberta-large-finetuned-sst5
+echarlaix/bert-base-uncased-sst2-acc91.1-d37-hybrid
+yoshitomo-matsubara/bert-large-uncased-sst2
+howey/roberta-large-sst2
+Alireza1044/albert-base-v2-sst2
+howey/roberta-large-sst2
+Bhumika/roberta-base-finetuned-sst2

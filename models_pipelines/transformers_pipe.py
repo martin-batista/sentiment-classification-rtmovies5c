@@ -42,36 +42,31 @@ pipe.add_parameter('num_cycles', parameters['num_cycles'])
 pipe.add_parameter('accelerator', parameters['accelerator'])
 pipe.add_parameter('devices', parameters['devices'])
 
-with open('models.txt', 'r') as file:
+with open('pooler_models.txt', 'r') as file:
     model_names = file.read().splitlines()
 
-training_nodes = []
-# for model_name in model_names:
-
-model_name = 'bert-base-uncased'
-training_nodes.append(model_name)
-
-pipe.add_parameter('pre_trained_model', model_name)
-pipe.add_step(
-    name = f'{model_name}',
-    base_task_name='base_train_model',
-    base_task_project=PROJECT_NAME,
-    parents=['data_split'],
-    parameter_override={'General/seed': '${pipeline.seed}',
-                        'General/pre_trained_model': '${pipeline.pre_trained_model}',
-                        'General/batch_size': '${pipeline.batch_size}',
-                        'General/max_length': '${pipeline.max_length}',
-                        'General/lr': '${pipeline.lr}',
-                        'General/stratified_sampling': '${pipeline.stratified_sampling}',
-                        'General/stratified_epochs': '${pipeline.stratified_epochs}',
-                        'General/lr_schedule': '${pipeline.lr_schedule}',
-                        'General/lr_warmup': '${pipeline.lr_warmup}',
-                        'General/num_cycles': '${pipeline.num_cycles}',
-                        'General/num_epochs': '${pipeline.num_epochs}',
-                        'General/accelerator': '${pipeline.accelerator}',
-                        'General/devices': '${pipeline.devices}'
-    }
-)
+for model_name in model_names:
+    pipe.add_parameter('pre_trained_model', model_name)
+    pipe.add_step(
+        name = f'{model_name}',
+        base_task_name='base_train_model',
+        base_task_project=PROJECT_NAME,
+        parents=['data_split'],
+        parameter_override={'General/seed': '${pipeline.seed}',
+                            'General/pre_trained_model': '${pipeline.pre_trained_model}',
+                            'General/batch_size': '${pipeline.batch_size}',
+                            'General/max_length': '${pipeline.max_length}',
+                            'General/lr': '${pipeline.lr}',
+                            'General/stratified_sampling': '${pipeline.stratified_sampling}',
+                            'General/stratified_epochs': '${pipeline.stratified_epochs}',
+                            'General/lr_schedule': '${pipeline.lr_schedule}',
+                            'General/lr_warmup': '${pipeline.lr_warmup}',
+                            'General/num_cycles': '${pipeline.num_cycles}',
+                            'General/num_epochs': '${pipeline.num_epochs}',
+                            'General/accelerator': '${pipeline.accelerator}',
+                            'General/devices': '${pipeline.devices}'
+        }
+    )
 
 if __name__ == '__main__':
     pipe.start()
