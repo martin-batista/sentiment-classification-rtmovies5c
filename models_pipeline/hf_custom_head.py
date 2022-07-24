@@ -330,9 +330,7 @@ if __name__ == '__main__':
     trainer.test(model, dm)
 
     # Confusion matrix plot:
-    outputs = trainer.predict(model, dm)
-    print(outputs)
-    # preds = [out.preds for out in outputs] # type: ignore
+    preds = trainer.predict(model, dm)
 
     labels = [batch['labels'] for batch in dm.predict_dataloader()]
     labels = torch.cat(labels)
