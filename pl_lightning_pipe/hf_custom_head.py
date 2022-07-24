@@ -1,7 +1,7 @@
 from collections import namedtuple
 from clearml import Task
 from pathlib import Path
-from typing import Dict
+from typing import Dict, NamedTuple
 import pandas as pd
 import numpy as np
 
@@ -216,16 +216,15 @@ class TransformerBase(pl.LightningModule):
         else:
             self.hidden_dim = hidden_dim
     
-    def model(self, input_ids, attention_mask, labels=None):
+    def model(self, input_ids, attention_mask, labels=None) -> NamedTuple:
         outputs = self.backbone(input_ids=input_ids, attention_mask=attention_mask)
         preds = self.classifier(outputs.pooler_output)
         loss = self.loss(preds, labels)
-        results = namedtuple('ModelOutputs', ['loss', 'preds'])
-        return results(loss=loss, preds=preds)
+        results = namedtuple('ModelOutputs', ['loss', 'preds', 'last_hidden_state'])
+        return results(loss=loss, preds=preds, last_hidden_state=outputs.last_hidden_state)
     
-    def forward(self, input_ids, attention_mask):
-        outputs = model(input_ids, attention_mask=attention_mask)
-        return self.classifier(outputs.pooler_output)
+    def forward(self, input_ids, attention_mask) -> NamedTuple:
+        return model(input_ids, attention_mask=attention_mask)
 
     def configure_metrics(self) -> None:
         self.prec = Precision(num_classes=self.num_classes, average="macro")
@@ -332,7 +331,8 @@ if __name__ == '__main__':
     trainer.test(model, dm)
 
     # Confusion matrix plot:
-    preds = trainer.predict(model, dm)
+    outputs = trainer.predict(model, dm)
+    preds = [out.preds for out in outputs] # type: ignore
 
     labels = [batch['labels'] for batch in dm.predict_dataloader()]
     labels = torch.cat(labels)
