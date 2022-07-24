@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader, Dataset, DataLoader, Sampler
 from torchmetrics import Accuracy, Precision, Recall, ConfusionMatrix # type: ignore
 
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import TQDMProgressBar # type: ignore
+from pytorch_lightning.callbacks import TQDMProgressBar, LearningRateMonitor, ModelCheckpoint # type: ignore
 from transformers import  AutoConfig, AutoTokenizer # type: ignore
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -229,7 +229,7 @@ class TransformerBase(pl.LightningModule):
         if batch["labels"] is not None:
             metric_dict = self.compute_metrics(preds, batch["labels"], mode=prefix)
             self.log_dict(metric_dict, prog_bar=True, on_step=False, on_epoch=True)
-            self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True)
+            self.log(f"{prefix}_loss", loss, prog_bar=True, sync_dist=True, on_epoch=True, on_step=False)
         return  loss
 
     def training_step(self, batch, batch_idx: int) -> torch.Tensor:
@@ -295,11 +295,20 @@ if __name__ == '__main__':
     test_data_path = preprocess_task.artifacts['test_data'].get_local_copy()
     try:
         valid_data_path = preprocess_task.artifacts['validation_data'].get_local_copy()
-    except:
+    except Exception:
         valid_data_path = None
 
-    # # #Defines training callbacks.
-    model_name = parameters['pre_trained_model']
+    ## Model checkpoint callback. 
+    Path('../data/models/train_callbacks').mkdir(parents=True, exist_ok=True)
+    checkpoint_callback = ModelCheckpoint(
+    dirpath='../data/models/train_callbacks',
+    save_top_k=2,
+    mode='min',
+    save_weights_only=True,
+    filename='{epoch}-{val_loss:.2f}'
+    )
+
+
 
     # #Trains the model.
     model = TransformerBase(params=parameters)
@@ -309,7 +318,9 @@ if __name__ == '__main__':
                         accelerator='gpu', 
                         devices=parameters['devices'], 
                         logger=True,
-                        callbacks=[TQDMProgressBar(refresh_rate=300)])
+                        callbacks=[TQDMProgressBar(refresh_rate=300),
+                                   LearningRateMonitor(logging_interval='epoch', log_momentum=True),
+                                   checkpoint_callback])
 
     trainer.fit(model, dm)
     trainer.save_checkpoint(f"{model_name}.ckpt")
