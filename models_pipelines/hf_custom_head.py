@@ -157,11 +157,11 @@ class TransformerDataModule(pl.LightningDataModule):
                                                   self.params['pre_trained_model'])
 
    def train_dataloader(self):   # sourcery skip: lift-duplicated-conditional
-       if self.stratified and 'last' in self.strat_pos:
+       if self.stratified and 'end' in self.strat_pos:
             if self.trainer.current_epoch < (self.num_epochs - self.strat_epochs):  # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, num_workers=self.num_workers)
 
-       elif self.stratified and 'first' in self.strat_pos:
+       elif self.stratified and 'start' in self.strat_pos:
             if self.trainer.current_epoch <= self.strat_epochs: # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                   sampler=StratifiedSampler(self.y, self.batch_size),
