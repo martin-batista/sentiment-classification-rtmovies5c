@@ -138,7 +138,7 @@ class TransformerDataModule(pl.LightningDataModule):
        self.prepare_data_per_node = False
        self.stratified = stratified
        self.strat_epochs = strat_epochs
-       self.strat_pos = params['stratified_sampling_position']
+       self.strat_pos = params['stratified_sampling_position'].split(' ')
        self.num_workers = num_workers
 
    def prepare_data(self):
@@ -157,16 +157,16 @@ class TransformerDataModule(pl.LightningDataModule):
                                                   self.params['pre_trained_model'])
 
    def train_dataloader(self):   # sourcery skip: lift-duplicated-conditional
-       if self.stratified and self.strat_pos == 'last':
+       if self.stratified and 'last' in self.strat_pos:
             if self.trainer.current_epoch < (self.num_epochs - self.strat_epochs):  # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, num_workers=self.num_workers)
 
-       elif self.stratified and self.strat_pos == 'first':
+       elif self.stratified and in self.strat_pos:
             if self.trainer.current_epoch <= self.strat_epochs: # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                   sampler=StratifiedSampler(self.y, self.batch_size),
                                   num_workers=self.num_workers)
-       elif self.stratified and self.strat_pos == 'alternate':
+       elif 'alternate' in self.strat_pos:
                     if self.trainer.current_epoch % 2 != 0: # type: ignore
                         return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                         sampler=StratifiedSampler(self.y, self.batch_size),
