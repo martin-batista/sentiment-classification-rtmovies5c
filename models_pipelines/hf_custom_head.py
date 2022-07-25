@@ -45,7 +45,7 @@ parameters = {
     }
 
 
-labels = ['Custom']
+labels = ['Custom', 'Alternate']
 if parameters['stratified_sampling']: labels.append('Stratified')
 if parameters['num_epochs'] > parameters['stratified_epochs']: labels.append('Random')
 
