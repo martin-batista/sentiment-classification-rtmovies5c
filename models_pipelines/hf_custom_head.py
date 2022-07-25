@@ -29,14 +29,14 @@ import seaborn as sns
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-        'pre_trained_model': 'base_train_model',
-        'batch_size': 64,
-        'max_length': 16,
+        'pre_trained_model': 'bert-base-uncased',
+        'batch_size': 32,
+        'max_length': 128,
         'lr': 2e-5,
         'num_epochs': 8,
         'stratified_sampling': True,
         'stratified_sampling_position': 'alternate',
-        'stratified_epochs': 4,
+        'stratified_epochs': 8,
         'lr_schedule': 'warmup_cosine_restarts', # warmup_linear, warmup_constant, warmup_cosine_restarts
         'lr_warmup': 0.5,
         'num_cycles': 4,
