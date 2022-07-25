@@ -166,7 +166,7 @@ class TransformerDataModule(pl.LightningDataModule):
                                   sampler=StratifiedSampler(self.y, self.batch_size),
                                   num_workers=self.num_workers)
        elif self.stratified and self.strat_pos == 'alternate':
-                    if self.trainer.current_epoch % 2 == 0: # type: ignore
+                    if self.trainer.current_epoch % 2 != 0: # type: ignore
                         return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                         sampler=StratifiedSampler(self.y, self.batch_size),
                                         num_workers=self.num_workers)
