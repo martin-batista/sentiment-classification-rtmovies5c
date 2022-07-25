@@ -343,7 +343,7 @@ if __name__ == '__main__':
                         logger=True,
                         callbacks=[TQDMProgressBar(refresh_rate=300),
                                    LearningRateMonitor(logging_interval='epoch', log_momentum=True),
-                                   EarlyStopping(monitor="val_accuracy", mode="max", patience=2),
+                                   EarlyStopping(monitor="val_loss", mode="min", patience=2),
                                    checkpoint_callback])
 
     trainer.fit(model, dm)
