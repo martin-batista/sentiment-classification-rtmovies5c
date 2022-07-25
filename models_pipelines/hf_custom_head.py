@@ -30,22 +30,22 @@ from pipe_conf import PROJECT_NAME
 
 parameters = {
         'pre_trained_model': 'bert-base-uncased',
-        'batch_size': 64,
+        'batch_size': 256,
         'max_length': 16,
         'lr': 2e-5,
-        'num_epochs': 1,
+        'num_epochs': 8,
         'stratified_sampling': True,
         'stratified_sampling_position': 'first',
-        'stratified_epochs': 1,
+        'stratified_epochs': 4,
         'lr_schedule': 'warmup_cosine_restarts', # warmup_linear, warmup_constant, warmup_cosine_restarts
-        'lr_warmup': 0.1,
+        'lr_warmup': 0.5,
         'num_cycles': 4,
         'accelerator': 'auto',
         'devices': 'auto',
     }
 
 
-labels = ['Debug']
+labels = []
 if parameters['stratified_sampling']: labels.append('Stratified')
 if parameters['num_epochs'] > parameters['stratified_epochs']: labels.append('Random')
 
