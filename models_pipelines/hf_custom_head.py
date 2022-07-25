@@ -29,14 +29,14 @@ import seaborn as sns
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-        'pre_trained_model': 'echarlaix/bert-base-uncased-sst2-acc91.1-d37-hybrid',
+        'pre_trained_model': 'bert-base-uncased',
         'batch_size': 32,
         'max_length': 128,
-        'lr': 1e-5,
+        'lr': 2e-5,
         'num_epochs': 8,
         'stratified_sampling': True,
-        'stratified_sampling_position': 'first',
-        'stratified_epochs': 8,
+        'stratified_sampling_position': 'start alternate', # 'start', 'end', 'alternate'
+        'stratified_epochs': 4, # Epochs to run pure stratified sampling.
         'lr_schedule': 'warmup_linear', # warmup_linear, warmup_constant, warmup_cosine_restarts
         'lr_warmup': 0.5,
         'num_cycles': 4,
