@@ -29,13 +29,13 @@ import seaborn as sns
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-        'pre_trained_model': 'bert-base-uncased',
+        'pre_trained_model': 'base_train_model',
         'batch_size': 64,
         'max_length': 16,
         'lr': 2e-5,
         'num_epochs': 8,
         'stratified_sampling': True,
-        'stratified_sampling_position': 'first',
+        'stratified_sampling_position': 'alternate',
         'stratified_epochs': 4,
         'lr_schedule': 'warmup_cosine_restarts', # warmup_linear, warmup_constant, warmup_cosine_restarts
         'lr_warmup': 0.5,
@@ -155,7 +155,7 @@ class TransformerDataModule(pl.LightningDataModule):
            self.valid_tokenized = TokenizeDataset(valid_data, self.params['max_length'],
                                                   self.params['pre_trained_model'])
 
-   def train_dataloader(self): 
+   def train_dataloader(self):   # sourcery skip: lift-duplicated-conditional
        if self.stratified and self.strat_pos == 'last':
             if self.trainer.current_epoch < (self.num_epochs - self.strat_epochs):  # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, num_workers=self.num_workers)
