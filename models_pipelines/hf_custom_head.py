@@ -47,6 +47,7 @@ parameters = {
 
 labels = ['Custom', 'Alternate']
 if parameters['stratified_sampling']: labels.append('Stratified')
+if parameters['stratified_sampling_position'] == 'alternate': labels.append('Alternate')
 if parameters['num_epochs'] > parameters['stratified_epochs']: labels.append('Random')
 
 Task.add_requirements('requirements.txt')
