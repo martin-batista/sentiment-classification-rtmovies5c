@@ -53,7 +53,6 @@ for model_name in model_names:
         name = f'{model_name}',
         base_task_name='base_train_model',
         base_task_project=PROJECT_NAME,
-        parents=['data_split'],
         parameter_override={'General/seed': '${pipeline.seed}',
                             'General/pre_trained_model': '${pipeline.pre_trained_model}',
                             'General/batch_size': '${pipeline.batch_size}',
