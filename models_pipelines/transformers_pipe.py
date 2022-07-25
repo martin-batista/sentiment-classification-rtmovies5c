@@ -7,14 +7,15 @@ parameters = {
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
     'batch_size': 16,
-    'max_length': 64,
+    'max_length': 256,
     'lr': 2e-5,
-    'num_epochs': 10,
+    'num_epochs': 8,
     'stratified_sampling': True,
-    'stratified_epochs': 7,
-    'lr_schedule': 'warmup_linear', # warmup_linear, warmup_constant, warmup_cosine_restarts
-    'lr_warmup': 0.5,
-    'num_cycles': 2,
+    'stratified_sampling_position': 'first',
+    'stratified_epochs': 4,
+    'lr_schedule': 'warmup_cosine_restarts', # warmup_linear, warmup_constant, warmup_cosine_restarts
+    'lr_warmup': 0.1,
+    'num_cycles': 4,
     'accelerator': 'auto',
     'devices': 'auto',
 }
@@ -35,6 +36,7 @@ pipe.add_parameter('max_length', parameters['max_length'])
 pipe.add_parameter('lr', parameters['lr'])
 pipe.add_parameter('num_epochs', parameters['num_epochs'])
 pipe.add_parameter('stratified_sampling', parameters['stratified_sampling'])
+pipe.add_parameter('stratified_sampling_position', parameters['stratified_sampling_position'])
 pipe.add_parameter('stratified_epochs', parameters['stratified_epochs'])
 pipe.add_parameter('lr_schedule', parameters['lr_schedule'])
 pipe.add_parameter('lr_warmup', parameters['lr_warmup'])
