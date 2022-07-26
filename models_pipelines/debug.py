@@ -1,5 +1,0 @@
-# %%
-# Access scalars
-
-
-# %%

@@ -4,5 +4,5 @@
 /clearml_credentials.txt
 /notebooks/remote_gpu.ipynb
 /remote/
-/models_pipelines/debug
-/models_pipelines/hf_auto_classification.py
+/models_pipeline/debug.py
+/models_pipeline/hf_auto_classification.py
