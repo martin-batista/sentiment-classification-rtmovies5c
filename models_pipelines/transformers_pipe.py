@@ -3,7 +3,6 @@ from clearml.automation import PipelineController
 from pipe_conf import PROJECT_NAME
 
 parameters = {
-    'validation_split': 0.1,
     'seed': 42,
     'pre_trained_model': 'bert-base-uncased',
     'batch_size': 32,
@@ -44,7 +43,7 @@ pipe.add_parameter('num_cycles', parameters['num_cycles'])
 pipe.add_parameter('accelerator', parameters['accelerator'])
 pipe.add_parameter('devices', parameters['devices'])
 
-with open('pooler_models.txt', 'r') as file:
+with open('models.txt', 'r') as file:
     model_names = file.read().splitlines()
 
 for model_name in model_names:
