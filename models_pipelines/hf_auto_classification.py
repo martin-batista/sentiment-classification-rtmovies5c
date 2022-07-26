@@ -313,6 +313,7 @@ if __name__ == '__main__':
     dirpath='../data/models/train_callbacks',
     save_top_k=2,
     mode='min',
+    monitor='val_loss',
     save_weights_only=True,
     filename='{epoch}-{val_loss:.2f}'
     )
