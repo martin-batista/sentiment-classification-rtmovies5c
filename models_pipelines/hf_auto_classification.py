@@ -155,28 +155,27 @@ class TransformerDataModule(pl.LightningDataModule):
                                                   self.params['pre_trained_model'])
 
    def train_dataloader(self):   # sourcery skip: lift-duplicated-conditional
-       if self.stratified and self.strat_pos == 'last':
+       if self.stratified and 'end' in self.strat_pos:
             if self.trainer.current_epoch < (self.num_epochs - self.strat_epochs):  # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, num_workers=self.num_workers)
 
-       elif self.stratified and self.strat_pos == 'first':
+       elif self.stratified and 'start' in self.strat_pos:
             if self.trainer.current_epoch <= self.strat_epochs: # type: ignore
                 return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                   sampler=StratifiedSampler(self.y, self.batch_size),
                                   num_workers=self.num_workers)
-
-       elif self.stratified and self.strat_pos == 'alternate':
-                   if self.trainer.current_epoch % 2 != 0: # type: ignore
-                       return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
-                                       sampler=StratifiedSampler(self.y, self.batch_size),
-                                       num_workers=self.num_workers)
-                   else:
-                       return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
-                                       num_workers=self.num_workers) 
+       elif 'alternate' in self.strat_pos:
+                    if self.trainer.current_epoch % 2 != 0: # type: ignore
+                        return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                                        sampler=StratifiedSampler(self.y, self.batch_size),
+                                        num_workers=self.num_workers)
+                    else:
+                        return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
+                                        num_workers=self.num_workers) 
 
        return DataLoader(self.train_tokenized, batch_size=self.batch_size, 
                                 num_workers=self.num_workers)
-   
+     
    def val_dataloader(self):
       return DataLoader(self.valid_tokenized, batch_size=self.batch_size, 
                         num_workers=self.num_workers)
