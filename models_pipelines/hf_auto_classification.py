@@ -34,11 +34,11 @@ parameters = {
         'lr': 2e-5,
         'num_epochs': 8,
         'stratified_sampling': False,
-        'stratified_sampling_position': 'alternate',
-        'stratified_epochs': 3,
+        'stratified_sampling_position': 'start alternate',
+        'stratified_epochs': 4,
         'lr_schedule': 'warmup_linear', # warmup_linear, warmup_constant, warmup_cosine_restarts
         'lr_warmup': 0.5,
-        'num_cycles': 2,
+        'num_cycles': 4,
         'accelerator': 'auto',
         'devices': 'auto',
     }
