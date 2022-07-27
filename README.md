@@ -28,3 +28,8 @@ We can see this in the overall class distribution plot, where about half of the 
 
 We can even see how the class distribution changes as the n-grams increase in size:
 ![plot](./img/n_gram_dist.svg)
+
+As expected the larger the text, the more uniform the distribution becomes among the classes.
+
+##### Baselines:
+We can establish some quick classification baselines. A purely random classifier would achieve $$\mathbb{E}(x) = 4 $$.
