@@ -44,6 +44,6 @@ $$P(y = k) = P(k) \approx 0.50 \\ \text{accuracy}$$
 To prevent target leakage we have to split the data in such a way that we preserve the entire tree for each review. That is, for each review either all of the tree is on the training set or the validation set, or the test set, where the pairwise intersection of these sets is empty. In other words, we cannot have nodes corresponding to a review in the test set appear in the training set.
 
 Arbitrarily splitting the data, as the Kaggle competition did, would not result in a model that can correctly generalize.
-The first step is to construct the training and testing sets, this is done in **test_data_split.py**. The data is retrieved from an S3 bucket and placed into a ClearML Dataset task and $20\%$ of the total data is reserved for the test set. 
+The first step is to construct the training and testing sets, this is done in **test_data_split.py**. The data is retrieved from an S3 bucket and placed into a ClearML Dataset task and $ 20\% $ of the total data is reserved for the test set. 
 The split is done with the consideration above, and the seed is chosen such that the Wasserstein distance between the resulting distributions is minimized, to ensure that the testing data is representative of the training data.
 
