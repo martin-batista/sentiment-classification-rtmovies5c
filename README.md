@@ -21,7 +21,7 @@ The data is the Rotten Tomatoes movie reviews sentiment tree-bank dataset. It ha
  - 3 : Slightly positive.
  - 4 : Positive.
 
-Here is a wordcloud of the positive 1-grams:
+Here is a wordcloud of the most frequent positive words:
 ![plot](./img/sentiment_4.png)
 
 Being a sentiment tree-bank means the reviews are decomposed into sequences of their constituent n-grams, which were then labeled separately. This implies there are a lot of single words (1-grams) in the data, the majority of which have neutral values, we need to account for this imbalance.
