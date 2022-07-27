@@ -33,7 +33,7 @@ As expected the larger the text, the more uniform the distribution becomes among
 
 ##### Baselines:
 We can establish some quick classification baselines. A purely random classifier would achieve:
-$$P(y = k) = \sum_{j = 0}^{4} P(j)P(j = k) \approx .19 \qquad \text{accuracy.}$$
+$$P(y = k) = \sum_{j = 0}^{4} P(j)P(j = k) \approx .19 \quad \text{accuracy.}$$
 Wheras a majority class classifier would achieve $\approx$ .50 accuracy.
 
 ##### Train/Val/Test splits:
