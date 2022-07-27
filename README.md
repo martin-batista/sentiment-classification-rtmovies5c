@@ -32,7 +32,9 @@ We can even see how the class distribution changes as the n-grams increase in si
 As expected the larger the text, the more uniform the distribution becomes among the classes.
 
 ##### Baselines:
-We can establish some quick classification baselines. A purely random classifier would achieve $\approx$ .19 accuracy. Wheras a majority class classifier would achieve $\approx$ .50 accuracy.
+We can establish some quick classification baselines. A purely random classifier would achieve:
+$$P(y = k | k) = \sum{j = 0}^{4} P(j)P(j = k) \approx .19 $$ accuracy. 
+Wheras a majority class classifier would achieve $\approx$ .50 accuracy.
 
 ##### Train/Val/Test splits:
 
