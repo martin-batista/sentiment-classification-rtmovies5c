@@ -21,6 +21,8 @@ The data is the Rotten Tomatoes movie reviews sentiment tree-bank dataset. It ha
  - 3 : Slightly positive.
  - 4 : Positive.
 
+![plot](./img/sentiment_4.png)
+
 Being a sentiment tree-bank means the reviews are decomposed into sequences of their constituent n-grams, which were then labeled separately. This implies there are a lot of single words (1-grams) in the data, the majority of which have neutral values, we need to account for this imbalance.
 
 We can see this in the overall class distribution plot, where about half of the examples fall in the neutral category:
@@ -43,3 +45,4 @@ To prevent target leakage we have to split the data in such a way that we preser
 Arbitrarily splitting the data, as the Kaggle competition did, would not result in a model that can correctly generalize.
 The first step is to slice away the testing set, this is done in **test_data_split.py**. The data is retrieved from an S3 bucket and placed into a ClearML Dataset task.
 The split is done with the consideration above, and the seed is chosen such that the Wasserstein distance between the resulting distributions is minimized, to ensure that the testing data is representative of the training data.
+
