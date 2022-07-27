@@ -24,4 +24,4 @@ The data is the Rotten Tomatoes movie reviews sentiment tree-bank dataset. It ha
 Being a sentiment tree-bank means the reviews are decomposed into sequences of their constituent n-grams, which were then labeled separately. This implies there are a lot of single words (1-grams) in the data, the majority of which have neutral values, we need to account for this inbalance.
 
 We can see this in the overall class distribution plot, where about half of the examples fall on the neutral category:
-![alt text](https://github.com/martin-batista/sentiment-classification-rtmovies5c/blob/main/class_distribution.png?raw=true)
+![plot](./img/class_distribution.png)
