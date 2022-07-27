@@ -25,3 +25,6 @@ Being a sentiment tree-bank means the reviews are decomposed into sequences of t
 
 We can see this in the overall class distribution plot, where about half of the examples fall on the neutral category:
 ![plot](./img/class_distribution.png)
+
+We can even see how the class distribution changes as the n-grams increase in size:
+![plot](./img/n_gram_dist.svg)
