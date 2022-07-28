@@ -97,3 +97,20 @@ This model doesn't particularly reach a high accuracy nor is it in the top 10 (o
 It's a case study that sometimes, what we're looking for cannot be surmised in a single number and blind adherance to single number metric optimization won't get us there.
 Thankfully ClearML and Pytorch-Lightning made the logging of the confusion matrix incredibly easy and allowed us to find this little model which turned out to be a variation of the model that maximized accuracy: _echarlaix/bert-base-uncased-sst2-acc91.1-d37-hybrid_.
 
+#### Improvements & Future Work:
+The best way to improve the models would be to get more data, specifically data that reflect what we want to optimize for. Actual movie reviews, not necessarily from a sentiment tree-bank.
+Some gain can be had by using data augmentation techniques for NLP.
+
+Percluding the data optimization, we can improve the models in a few ways:
+
+##### Low risk:
+We can build ensambles of the best performing models. We can do so not just by averaging their outputs, but I believe better results can be achieved by concatenating the learned text representations of these models and using a character based neural network (for example: a small conv-net) to look for patterns in these representations.
+
+#### Higher risk:
+Pseudo-labeling.
+We can, if desperate enough for a bit more of performance: construct ensambles by adding highly confident predictions from the test dataset back into the training set and re-train the model on the new set. This runs the risk of overfitting, but if done right can improve the statistical power of the model.
+
+#### Efficiency:
+If we'd like the model or the ensamble to be computationally efficient, then pruning techniques is the way to go. Pytorch-Lightning incorporates callbacks and state of the art pruning strategies (such as the lottery ticket hypothesis) that will find a sparse model which performs just as well as its dense counterpart.
+
+
