@@ -53,3 +53,47 @@ Statistics and plots for the splits are generated and stored in the Task aswell,
 ![plot](./img/data_splits.png)
 
 #### Training:
+##### Base model:
+In **base_model.py** We find the Pytorch and Pytorch-Lightning code necesary to train a 1-layer neural network on top of the representations learned from differnet BERT-based family of models, with diverse learning rate schedulers. It also calculates metrics such as accuracy, precision and recall with micro averaging for the latter to account for the class inbalances. It logs these metrics into TensorBoard which in turn gets picked up automatically by ClearML once we instantiate the Task.
+
+This module also contains the Tokenization logic, the DataLoader logic and an optional Sampler class which allows us to generate maximally informative stratified mini-batches.
+
+This module is ran as a ClearML task and remotely queued for execution in a GPU instance by a ClearML agent.
+
+#### Pipeline:
+The pipeline consists on reading **models.txt** and injecting them through ClearML parameter override into the **base_model** Task. It will automatically generate the different Task needed and schedule them accordingly in the GPU instances.
+I used 4 Google Colab Pro GPU instances as ClearML agents (it's very easy to set them up).
+
+#### Results:
+The pipeline was ran multiple times, the most succesful models (according to differnet metrics) were iterated upon. Here are some of what I consider the best results (it's subjective according to which metric you'd like to optimize for).
+
+#### The goal:
+I wanted the model to be able to predict the sentiment of new reviews. Since the test-set is also a sentiment tree-bank, this is a bit tricky since the majority class tends to dominate if trained carelessly.
+
+##### Accuracy:
+In my opinion, this is a bad metric to optimize in this case. The highest achieved accuracy was $$0.67$$ on a single model. It was a bert-based-uncased pre-trained model previously fined tuned on an sst-2 task, specifically: _echarlaix/bert-base-uncased-sst2-acc91.1-d37-hybrid_.
+In order to optimize for accuracy, a simple random DataLoader is needed. I.e samply the mini-batch data randomly from the training set.
+The problem is this:
+![plot](./img/accuracy_model.png)
+
+As we can see, this form of sampling in which the dominant class 2 is also dominant in the mini-batch results in an enormous centrality in the confusion matrix. Yes it achieves high accuracy, but it does so by not taking any chance on the sentiment classifier and preferring when in even the slightest doubt, to err on the majority class.
+With the exception of the _slightly positive_ and _neutral_ class, it doesn't classify any other class over 50% of the time.
+
+##### Precision/Recall:
+This is a more suitable metric. In order to optimize for these metrics, or their geometric mean the F1 score, we need to incorporate the stratified sampling approach, the optimal strategy in this case is to train for 4 epochs with stratified mini-batches and 2 more epochs with regular random mini-batches. 
+This results in more balanced results:
+![plot](./img/precision_recall.png)
+
+It achieves better results, but still struggles significantly with extreme sentiments and it also errs incorrectly. It classifies for example, 20% of the slightly negative sentiments as slightly positive.
+I would prefer a model that errs more consistently. I.e missclassify to it's neighbors (slightly negative to neutral or negative).
+
+##### Best:
+The best model, in my opinion, is not one that optimizes any one given metric, but one which attempts to reach 50% precision in all classes, and errs correctly. The strategy to train such a model is to train with 4 epochs of stratified sampling, then train for another 4 epochs with alternate sampling (i.e 1 epoch random then 1 epoch stratified).
+![plot](./img/best.png)
+
+As you can see, the model achieves over 50% precision in all classes except _slightly negative_ . But it also errs in blocks, i.e it missclassifies to its neighbor.
+This model doesn't particularly reach a high accuracy nor is it in the top 10 (of the 37 models) when it comes to precision and recall.
+
+It's a case study that sometimes, what we're looking for cannot be surmised in a single number and blind adherance to single number metric optimization won't get us there.
+Thankfully ClearML and Pytorch-Lightning made the logging of the confusion matrix incredibly easy and allowed us to find this little model which turned out to be a variation of the model that maximized accuracy: _echarlaix/bert-base-uncased-sst2-acc91.1-d37-hybrid_.
+
