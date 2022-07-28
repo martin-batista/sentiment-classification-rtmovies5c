@@ -47,3 +47,9 @@ Arbitrarily splitting the data, as the Kaggle competition did, would not result 
 The first step is to construct the training and testing sets, this is done in **test_data_split.py**. The data is retrieved from an S3 bucket and placed into a ClearML Dataset task and 20% of the total data is reserved for the test set. 
 The split is done with the consideration above, and the seed is chosen such that the Wasserstein distance between the resulting distributions is minimized, to ensure that the testing data is representative of the training data.
 
+##### Train/Validation splits:
+This split is performed as part of the models_pipeline in **data_split.py**, the reason for this is to accomodate for various validation strategies if needed, such as k-fold cross validation, change the size of the validation split. It's performed as a ClearML task and the end result is uploaded to the Task as an artifact.
+Statistics and plots for the splits are generated and stored in the Task aswell, for example, the distributions:
+![plot](./img/data_splits.png)
+
+#### Training:
